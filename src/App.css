@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+  text-decoration: none;
+  user-select: none;
+}
+
+:root {
+  --co-gray:       #666666; 
+  --co-navy:       #2F3D4D; 
+  --co-blue:       #3D5166; 
+  --co-light-blue: #779CAB; 
+  --co-green:      #95B359;
+  --co-white:      #FFFFFF; 
+}
