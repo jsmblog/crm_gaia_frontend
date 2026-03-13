@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -8,10 +10,22 @@
 }
 
 :root {
-  --co-gray:       #666666; 
-  --co-navy:       #2F3D4D; 
-  --co-blue:       #3D5166; 
-  --co-light-blue: #779CAB; 
-  --co-green:      #95B359;
-  --co-white:      #FFFFFF; 
+  --gray:           #666666;
+  --dark:           #2F3D4D;
+  --mid:            #3D5166;
+  --light:          #779CAB;
+  --green:          #95B359;
+  --bg:             #F4F6F8;
+  --card:           #ffffff;
+  --border:         #E2E8EE;
+  --text:           #2F3D4D;
+  --gray-secondary: #8A99AA;
+  --white:          #fff;
+
+  --font-body:    'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --transition: 180ms ease;
 }

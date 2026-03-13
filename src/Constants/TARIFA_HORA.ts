@@ -1,0 +1,1 @@
+export const TARIFA_HORA:number = 10;
