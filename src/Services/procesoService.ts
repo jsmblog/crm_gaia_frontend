@@ -1,0 +1,182 @@
+// Services/procesoService.ts
+
+import { connection_to_backend } from "../Connection/connection";
+import type {
+  Proceso,
+  ProcesoPayload,
+  EtapaPayload,
+  WizardPayload,
+  ProcesoListResponse,
+  ProcesoResponse,
+  TipoInteraccion,
+  EstatusProceso,
+} from "../Interfaces/i_procesos";
+
+export const procesoService = {
+
+  getAll: (params?: { proyectoId?: string; estatus?: string; tipo?: string; page?: number; limit?: number }) =>
+    connection_to_backend
+      .get<ProcesoListResponse>("/procesos", { params })
+      .then(r => r.data),
+
+  getById: (id: string) =>
+    connection_to_backend
+      .get<ProcesoResponse>(`/procesos/${id}`)
+      .then(r => r.data.data),
+
+  create: (proyectoId: string, payload: ProcesoPayload) =>
+    connection_to_backend
+      .post<ProcesoResponse>(`/proyectos/${proyectoId}/procesos`, payload)
+      .then(r => r.data.data),
+
+  update: (id: string, payload: Partial<ProcesoPayload>) =>
+    connection_to_backend
+      .put<ProcesoResponse>(`/procesos/${id}`, payload)
+      .then(r => r.data.data),
+
+  cambiarEstatus: (id: string, estatus: EstatusProceso) =>
+    connection_to_backend
+      .patch<{ ok: boolean; mensaje: string; data: Proceso }>(`/procesos/${id}/estatus`, { estatus })
+      .then(r => r.data),
+
+  remove: (id: string) =>
+    connection_to_backend
+      .delete<{ ok: boolean; mensaje: string }>(`/procesos/${id}`)
+      .then(r => r.data),
+
+  // ── Etapas — método genérico (usado por el panel de detalle) ──
+  upsertEtapa: (id: string, etapa: string, data: EtapaPayload) =>
+    connection_to_backend
+      .put(`/procesos/${id}/${etapa}`, data)
+      .then(r => r.data),
+
+  // ── Etapas — métodos específicos (tipado fuerte por etapa) ────
+  upsertLevantamiento: (id: string, data: Pick<EtapaPayload,
+    'consultores_ids' | 'fecha_levantamiento' | 'observaciones'>) =>
+    connection_to_backend.put(`/procesos/${id}/levantamiento`, data).then(r => r.data),
+
+  upsertEstimacion: (id: string, data: Pick<EtapaPayload,
+    'consultores_ids' | 'fecha_estimacion' | 'observaciones'>) =>
+    connection_to_backend.put(`/procesos/${id}/estimacion`, data).then(r => r.data),
+
+  upsertPropuesta: (id: string, data: Pick<EtapaPayload,
+    'consultores_ids' | 'nivel_detalle' | 'fecha_entrega_propuesta' |
+    'valor_presupuestado' | 'horas_presupuestadas' | 'observaciones'>) =>
+    connection_to_backend.put(`/procesos/${id}/propuesta`, data).then(r => r.data),
+
+  upsertPreliminar: (id: string, data: Pick<EtapaPayload,
+    'consultores_ids' | 'fecha_preliminar' | 'resultado' | 'viable' | 'observaciones'>) =>
+    connection_to_backend.put(`/procesos/${id}/preliminar`, data).then(r => r.data),
+
+  upsertAprobacion: (id: string, data: Pick<EtapaPayload,
+    'consultores_ids' | 'aprobado' | 'fecha_aprobacion' |
+    'motivo_rechazo' | 'fecha_rechazo' | 'observaciones'>) =>
+    connection_to_backend.put(`/procesos/${id}/aprobacion`, data).then(r => r.data),
+
+  upsertEjecucion: (id: string, data: Pick<EtapaPayload,
+    'consultores_ids' | 'consultor_responsable_id' | 'fecha_inicio' |
+    'fecha_fin' | 'horas_reales' | 'observaciones'>) =>
+    connection_to_backend.put(`/procesos/${id}/ejecucion`, data).then(r => r.data),
+
+  // ── Interacciones ─────────────────────────────────────────────
+  getInteracciones: (id: string) =>
+    connection_to_backend
+      .get<{ ok: boolean; data: any[] }>(`/procesos/${id}/interacciones`)
+      .then(r => r.data.data),
+
+  crearInteraccion: (id: string, data: {
+    consultor_id: string; tipo?: TipoInteraccion; descripcion?: string; fecha: string;
+  }) =>
+    connection_to_backend.post(`/procesos/${id}/interacciones`, data).then(r => r.data),
+
+  eliminarInteraccion: (id: string, interaccionId: string) =>
+    connection_to_backend
+      .delete(`/procesos/${id}/interacciones/${interaccionId}`)
+      .then(r => r.data),
+
+  // ── Wizard — crea el proceso completo en cascada ──────────────
+  createFull: async (w: WizardPayload): Promise<Proceso> => {
+    // 1. Proceso base
+    const proceso = await procesoService.create(w.proyecto_id, {
+      nombre_proceso:          w.nombre_proceso,
+      tipo:                    w.tipo           || undefined,
+      tipo_proceso:            w.tipo_proceso   as any,
+      estatus:                 w.estatus        || 'Lead',
+      prioridad:               w.prioridad      || undefined,
+      probabilidad_aprobacion: w.probabilidad_aprobacion || undefined,
+      plazo_inicio:            w.plazo_inicio   || undefined,
+      herramienta_rpa_id:      w.herramienta_rpa_id || undefined,
+      accion_responsable:      w.accion_responsable  || undefined,
+    });
+
+    const id = proceso.id;
+    const calls: Promise<any>[] = [];
+
+    // 2. Levantamiento
+    if (w.lev_consultores_ids.length || w.lev_fecha)
+      calls.push(procesoService.upsertLevantamiento(id, {
+        consultores_ids:     w.lev_consultores_ids.length ? w.lev_consultores_ids : undefined,
+        fecha_levantamiento: w.lev_fecha         || undefined,
+        observaciones:       w.lev_observaciones || undefined,
+      }));
+
+    // 3. Estimación
+    if (w.est_consultores_ids.length || w.est_fecha)
+      calls.push(procesoService.upsertEstimacion(id, {
+        consultores_ids:  w.est_consultores_ids.length ? w.est_consultores_ids : undefined,
+        fecha_estimacion: w.est_fecha         || undefined,
+        observaciones:    w.est_observaciones || undefined,
+      }));
+
+    // 4. Propuesta
+    if (w.prop_valor || w.prop_consultores_ids.length)
+      calls.push(procesoService.upsertPropuesta(id, {
+        consultores_ids:         w.prop_consultores_ids.length ? w.prop_consultores_ids : undefined,
+        nivel_detalle:           w.prop_nivel_detalle || undefined,
+        fecha_entrega_propuesta: w.prop_fecha_entrega || undefined,
+        valor_presupuestado:     w.prop_valor ? +w.prop_valor : undefined,
+        horas_presupuestadas:    w.prop_horas ? +w.prop_horas : undefined,
+        observaciones:           w.prop_observaciones || undefined,
+      }));
+
+    // 5. Preliminar
+    if (w.pre_fecha || w.pre_resultado)
+      calls.push(procesoService.upsertPreliminar(id, {
+        fecha_preliminar: w.pre_fecha     || undefined,
+        resultado:        w.pre_resultado || undefined,
+        viable:           w.pre_viable    ?? undefined,
+      }));
+
+    // 6. Aprobación
+    if (w.apr_aprobado === 'Aprobado' || w.apr_aprobado === 'Rechazado')
+      calls.push(procesoService.upsertAprobacion(id, {
+        aprobado:         w.apr_aprobado === 'Aprobado',
+        fecha_aprobacion: w.apr_fecha          || undefined,
+        motivo_rechazo:   w.apr_motivo_rechazo || undefined,
+      }));
+
+    // 7. Ejecución
+    if (w.ejec_fecha_inicio)
+      calls.push(procesoService.upsertEjecucion(id, {
+        consultores_ids:          w.ejec_consultores_ids.length ? w.ejec_consultores_ids : undefined,
+        consultor_responsable_id: w.ejec_consultor_responsable_id || undefined,
+        fecha_inicio:             w.ejec_fecha_inicio,
+        fecha_fin:                w.ejec_fecha_fin     || undefined,
+        horas_reales:             w.ejec_horas_reales  ? +w.ejec_horas_reales : undefined,
+        observaciones:            w.ejec_observaciones || undefined,
+      }));
+
+    // 8. Interacción opcional
+    if (w.int_consultor_id && w.int_fecha)
+      calls.push(procesoService.crearInteraccion(id, {
+        consultor_id: w.int_consultor_id,
+        tipo:         w.int_tipo    || undefined,
+        descripcion:  w.int_descripcion || undefined,
+        fecha:        w.int_fecha,
+      }));
+
+    await Promise.allSettled(calls);
+
+    return procesoService.getById(id);
+  },
+};

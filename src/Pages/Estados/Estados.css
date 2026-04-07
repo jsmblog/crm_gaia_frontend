@@ -1,0 +1,44 @@
+.estados-page {
+  padding: 24px;
+  max-width: 100%;
+}
+
+.estados-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.estados-section__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text, #111);
+}
+
+.estado-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text, #111);
+}
+
+.estado-badge--activo {
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.estado-badge--inactivo {
+  background: #f3f4f6;
+  color: #9ca3af;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}

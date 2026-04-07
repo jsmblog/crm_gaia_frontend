@@ -4,13 +4,17 @@ import { VITE_URL_BACKEND } from '../Config/config';
 
 export const connection_to_backend = axios.create({
   baseURL: VITE_URL_BACKEND,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 connection_to_backend.interceptors.request.use(
   config => {
     const token = Cookies.get('auth_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
+
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   error => Promise.reject(error)

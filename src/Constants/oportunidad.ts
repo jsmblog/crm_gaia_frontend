@@ -1,5 +1,5 @@
-import type { EstatusOportunidad, Prioridad } from "../Interfaces/i_oportunidad";
-import type { WizardPayload } from "../Services/oportunidadService";
+import type { EstatusOportunidad, Prioridad } from "../Interfaces/i_procesos";
+import type { WizardPayload } from "../Services/procesoService";
 
 export const ESTATUS_LIST: EstatusOportunidad[] = [
   'Lead','Contactado','Levantamiento','Estimacion','Propuesta',

@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Search, Plus, Pencil, X, Check, UserX } from 'lucide-react';
 import { consultorService } from '../../Services/consultorService';
 import { useToast } from '../../Hooks/useToast';
 import './Consultores.css';
 import type { Consultor, ConsultorPayload } from '../../Interfaces/i_consultor';
 
+// ─────────────────────────────────────────────────────────────
+// Modal — Crear / Editar consultor
+// ─────────────────────────────────────────────────────────────
 interface ModalProps {
   initial?: Consultor | null;
-  onClose:  () => void;
-  onSaved:  () => void;
+  onClose: () => void;
+  onSaved: () => void;
 }
 
 const EMPTY: ConsultorPayload = {
@@ -18,13 +21,9 @@ const EMPTY: ConsultorPayload = {
 const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
   const { toast, ToastContainer } = useToast();
   const [form, setForm] = useState<ConsultorPayload>(
-    initial ? {
-      nombre:   initial.nombre,
-      email:    initial.email,
-      telefono: initial.telefono ?? '',
-      rol:      initial.rol,
-      activo:   initial.activo,
-    } : { ...EMPTY }
+    initial
+      ? { nombre: initial.nombre, email: initial.email, telefono: initial.telefono ?? '', rol: initial.rol, activo: initial.activo, fecha_ingreso: initial.fecha_ingreso ? initial.fecha_ingreso.split('T')[0] : null }
+      : { ...EMPTY }
   );
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +33,9 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
   const handleSubmit = async () => {
     if (!form.nombre.trim() || !form.email.trim())
       return toast.warning('Nombre y email son requeridos');
-
+    if (form.fecha_ingreso && form.fecha_ingreso > new Date().toISOString().slice(0, 10)) {
+      return toast.error("La fecha de ingreso no puede ser futura.");
+    }
     setLoading(true);
     try {
       const payload = { ...form, telefono: form.telefono?.trim() || null };
@@ -42,13 +43,14 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
         await consultorService.update(initial.id, payload);
         toast.success('Consultor actualizado');
       } else {
-        await consultorService.create(payload as ConsultorPayload);
-        toast.success('Consultor creado. Se envió un correo de verificación.');
+        await consultorService.create(payload);
+        toast.success('Consultor creado');
       }
       onSaved();
       onClose();
     } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Error al guardar el consultor';
+      // El backend usa "mensaje", no "message"
+      const msg = err?.response?.data?.mensaje ?? 'Error al guardar el consultor';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -63,7 +65,7 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
           <div>
             <h2 className="modal__title">{initial ? 'Editar Consultor' : 'Nuevo Consultor'}</h2>
             <p className="modal__sub">
-              {initial ? 'Modifica la información del consultor' : 'Se enviará un correo de acceso al email registrado'}
+              {initial ? 'Modifica la información del consultor' : 'Complete los datos del nuevo consultor'}
             </p>
           </div>
           <button className="modal__close" onClick={onClose}><X size={16} /></button>
@@ -78,7 +80,7 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
             </div>
             <div className="mfield">
               <label className="mfield__label">Email <span className="mfield__req">*</span></label>
-              <input className="mfield__input" type="email" placeholder="correo@gaia.com"
+              <input className="mfield__input" type="email" placeholder="correo@empresa.com"
                 value={form.email} onChange={e => set('email', e.target.value)}
                 disabled={!!initial} />
             </div>
@@ -98,21 +100,33 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
                 <option value="admin">Admin</option>
               </select>
             </div>
-          </div>
-
-          <div className="mfield">
-            <label className="mfield__label">Estado</label>
-            <div className="toggle-wrap">
-              <button
-                type="button"
-                className={`toggle ${form.activo ? 'toggle--on' : ''}`}
-                onClick={() => set('activo', !form.activo)}
-              >
-                <span className="toggle__thumb" />
-              </button>
-              <span className="toggle__label">{form.activo ? 'Activo' : 'Inactivo'}</span>
+            <div className="mfield">
+              <label className="mfield__label">Fecha de ingreso</label>
+              <input
+                className="mfield__input"
+                type="date"
+                max={new Date().toISOString().slice(0, 10)} value={form.fecha_ingreso ?? ''}
+                onChange={e => set('fecha_ingreso', e.target.value)}
+              />
             </div>
           </div>
+
+          {/* Estado solo visible al editar */}
+          {initial && (
+            <div className="mfield">
+              <label className="mfield__label">Estado</label>
+              <div className="toggle-wrap">
+                <button
+                  type="button"
+                  className={`toggle ${form.activo ? 'toggle--on' : ''}`}
+                  onClick={() => set('activo', !form.activo)}
+                >
+                  <span className="toggle__thumb" />
+                </button>
+                <span className="toggle__label">{form.activo ? 'Activo' : 'Inactivo'}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="modal__foot">
@@ -127,45 +141,55 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
   );
 };
 
-/* ── Confirm delete ──────────────────────────── */
+// ─────────────────────────────────────────────────────────────
+// Confirm desactivar (soft delete)
+// ─────────────────────────────────────────────────────────────
 interface ConfirmProps { nombre: string; onConfirm: () => void; onCancel: () => void; }
 
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: ConfirmProps) => (
   <div className="modal-overlay" onClick={onCancel}>
     <div className="modal modal--sm" onClick={e => e.stopPropagation()}>
       <div className="modal__head">
-        <h2 className="modal__title">Eliminar consultor</h2>
+        <h2 className="modal__title">Desactivar consultor</h2>
         <button className="modal__close" onClick={onCancel}><X size={16} /></button>
       </div>
       <div className="modal__body">
         <p className="confirm__text">
-          ¿Estás seguro de eliminar a <strong>{nombre}</strong>? Esta acción eliminará también su acceso al sistema.
+          ¿Desactivar a <strong>{nombre}</strong>? Su cuenta quedará inactiva
+          pero el historial se conservará. Puedes reactivarlo editándolo.
         </p>
       </div>
       <div className="modal__foot">
         <button className="modal__btn modal__btn--ghost" onClick={onCancel}>Cancelar</button>
         <button className="modal__btn modal__btn--danger" onClick={onConfirm}>
-          <Trash2 size={14} /> Eliminar
+          <UserX size={14} /> Desactivar
         </button>
       </div>
     </div>
   </div>
 );
 
-/* ── Page ────────────────────────────────────── */
+// ─────────────────────────────────────────────────────────────
+// Página principal
+// ─────────────────────────────────────────────────────────────
 export const Consultores = () => {
   const { toast, ToastContainer } = useToast();
   const [consultores, setConsultores] = useState<Consultor[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [query, setQuery]             = useState('');
-  const [modal, setModal]             = useState<'create' | Consultor | null>(null);
-  const [toDelete, setToDelete]       = useState<Consultor | null>(null);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [filtroRol, setFiltroRol] = useState<'todos' | 'consultor' | 'admin'>('todos');
+  const [filtroActivo, setFiltroActivo] = useState<'todos' | 'activo' | 'inactivo'>('todos');
+  const [modal, setModal] = useState<'create' | Consultor | null>(null);
+  const [toDelete, setToDelete] = useState<Consultor | null>(null);
 
   const fetchConsultores = async () => {
     setLoading(true);
     try {
-      const data = await consultorService.getAll();
-      setConsultores(data);
+      // El backend devuelve { ok, total, page, pages, data[] }
+      const res = await consultorService.getAll({ limit: 100 });
+      setConsultores(res.data);
+      setTotal(res.total);
     } catch {
       toast.error('Error al cargar los consultores');
     } finally {
@@ -175,21 +199,29 @@ export const Consultores = () => {
 
   useEffect(() => { fetchConsultores(); }, []);
 
-  const filtered = useMemo(() =>
-    consultores.filter(c =>
-      c.nombre.toLowerCase().includes(query.toLowerCase()) ||
-      c.email.toLowerCase().includes(query.toLowerCase())
-    ), [consultores, query]);
+  // Filtrado local (búsqueda + rol + estado)
+  const filtered = useMemo(() => {
+    return consultores.filter(c => {
+      const matchQuery = c.nombre.toLowerCase().includes(query.toLowerCase()) ||
+        c.email.toLowerCase().includes(query.toLowerCase());
+      const matchRol = filtroRol === 'todos' || c.rol === filtroRol;
+      const matchActivo = filtroActivo === 'todos'
+        || (filtroActivo === 'activo' && c.activo)
+        || (filtroActivo === 'inactivo' && !c.activo);
+      return matchQuery && matchRol && matchActivo;
+    });
+  }, [consultores, query, filtroRol, filtroActivo]);
 
   const handleDelete = async () => {
     if (!toDelete) return;
     try {
       await consultorService.remove(toDelete.id);
-      toast.success('Consultor eliminado');
+      toast.success('Consultor desactivado');   // es soft delete
       setToDelete(null);
       fetchConsultores();
-    } catch {
-      toast.error('Error al eliminar el consultor');
+    } catch (err: any) {
+      const msg = err?.response?.data?.mensaje ?? 'Error al desactivar el consultor';
+      toast.error(msg);
     }
   };
 
@@ -211,6 +243,8 @@ export const Consultores = () => {
         <div className="table-card">
           <div className="table-card__toolbar">
             <span className="table-card__label">Consultores Registrados</span>
+
+            {/* Búsqueda */}
             <div className="table-search">
               <Search size={13} className="table-search__icon" />
               <input
@@ -220,7 +254,30 @@ export const Consultores = () => {
                 onChange={e => setQuery(e.target.value)}
               />
             </div>
-            <span className="table-card__count">{filtered.length} registros</span>
+
+            {/* Filtro rol */}
+            <select
+              className="table-filter"
+              value={filtroRol}
+              onChange={e => setFiltroRol(e.target.value as typeof filtroRol)}
+            >
+              <option value="todos">Todos los roles</option>
+              <option value="consultor">Consultor</option>
+              <option value="admin">Admin</option>
+            </select>
+
+            {/* Filtro estado */}
+            <select
+              className="table-filter"
+              value={filtroActivo}
+              onChange={e => setFiltroActivo(e.target.value as typeof filtroActivo)}
+            >
+              <option value="todos">Todos</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </select>
+
+            <span className="table-card__count">{filtered.length} / {total}</span>
           </div>
 
           <div className="table-wrap">
@@ -230,22 +287,24 @@ export const Consultores = () => {
                   <th>#</th>
                   <th>Nombre</th>
                   <th>Email</th>
+                  <th>Teléfono</th>
                   <th>Rol</th>
-                  <th>Activo</th>
-                  <th>Registro</th>
+                  <th>Estado</th>
+                  <th>Fecha de ingreso</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="ctable__empty">Cargando…</td></tr>
+                  <tr><td colSpan={8} className="ctable__empty">Cargando…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="ctable__empty">Sin resultados</td></tr>
+                  <tr><td colSpan={8} className="ctable__empty">Sin resultados</td></tr>
                 ) : filtered.map((c, i) => (
-                  <tr key={c.id}>
+                  <tr key={c.id} className={!c.activo ? 'ctable__row--inactive' : ''}>
                     <td className="ctable__num">#{i + 1}</td>
                     <td className="ctable__name">{c.nombre}</td>
                     <td className="ctable__muted">{c.email}</td>
+                    <td className="ctable__muted">{c.telefono ?? '—'}</td>
                     <td>
                       <span className={`badge badge--${c.rol}`}>{c.rol}</span>
                     </td>
@@ -254,15 +313,19 @@ export const Consultores = () => {
                         {c.activo ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
-                    <td className="ctable__muted">{fmtDate(c.createdAt)}</td>
+                    <td className="ctable__muted">
+                      {c.fecha_ingreso ? fmtDate(c.fecha_ingreso) : '—'}
+                    </td>
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(c)}>
                           <Pencil size={13} /> Editar
                         </button>
-                        <button className="action-btn action-btn--del" onClick={() => setToDelete(c)}>
-                          <Trash2 size={13} />
-                        </button>
+                        {c.activo && (
+                          <button className="action-btn action-btn--del" onClick={() => setToDelete(c)}>
+                            <UserX size={13} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -1,0 +1,90 @@
+import { Check, Loader, Lock } from 'lucide-react';
+import type { WizardPayload } from '../../Interfaces/i_procesos';
+import { TODAY, type Setter } from '../../Constants/procesos';
+
+interface Props {
+  d: Partial<WizardPayload>;
+  set: Setter;
+  onSave: () => Promise<void>;
+  saving: boolean;
+  saved: boolean;
+  locked: boolean;
+}
+
+export const Step4 = ({ d, set, onSave, saving, saved, locked }: Props) => {
+  if (locked) {
+    return (
+      <div className="step-body step-locked">
+        <Lock size={32} strokeWidth={1.2} />
+        <p>Primero completa y guarda la información del <strong>Lead</strong> en el paso 1.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="step-body">
+      <p className="step-section-title">ANÁLISIS PRELIMINAR</p>
+
+      <div className="wrow">
+        <div className="wfield">
+          <label className="wfield__label">FECHA PRELIMINAR</label>
+          <input type="date" className="wfield__input"
+            value={d.pre_fecha ?? ''} onChange={e => set('pre_fecha', e.target.value)} />
+        </div>
+        <div className="wfield">
+          <label className="wfield__label">¿VIABLE?</label>
+          <select className="wfield__input"
+            value={d.pre_viable === null || d.pre_viable === undefined ? '' : String(d.pre_viable)}
+            onChange={e => set('pre_viable', e.target.value === '' ? null : e.target.value === 'true')}>
+            <option value="">— Sin definir —</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="wfield">
+        <label className="wfield__label">RESULTADO / CONCLUSIONES</label>
+        <textarea className="wfield__input wfield__textarea" placeholder="Conclusiones del análisis preliminar…"
+          value={d.pre_resultado ?? ''} onChange={e => set('pre_resultado', e.target.value)} />
+      </div>
+
+      <div className="step-divider" />
+      <p className="step-section-title">APROBACIÓN</p>
+
+      <div className="wrow">
+        <div className="wfield">
+          <label className="wfield__label">RESULTADO</label>
+          <select className="wfield__input" value={d.apr_aprobado ?? ''} onChange={e => set('apr_aprobado', e.target.value)}>
+            <option value="">— Pendiente —</option>
+            <option value="Aprobado">✓ Aprobado</option>
+            <option value="Rechazado">✗ Rechazado</option>
+          </select>
+        </div>
+        <div className="wfield">
+          <label className="wfield__label">FECHA APROBACIÓN</label>
+          <input type="date" className="wfield__input"
+            value={d.apr_fecha ?? TODAY} onChange={e => set('apr_fecha', e.target.value)} />
+        </div>
+      </div>
+
+      {d.apr_aprobado === 'Rechazado' && (
+        <div className="wfield">
+          <label className="wfield__label">MOTIVO DE RECHAZO <span className="wfield__req">*</span></label>
+          <input className="wfield__input" placeholder="Indica el motivo del rechazo"
+            value={d.apr_motivo_rechazo ?? ''} onChange={e => set('apr_motivo_rechazo', e.target.value)} />
+        </div>
+      )}
+
+      <div className="step-save-row">
+        <button className="step-save-btn" onClick={onSave} disabled={saving}>
+          {saving
+            ? <><Loader size={14} className="spin" /> Guardando…</>
+            : <><Check size={14} /> {saved ? 'Actualizar aprobación' : 'Guardar Preliminar y Aprobación'}</>
+          }
+        </button>
+        {saved && <span className="step-save-hint">✓ Etapa guardada</span>}
+      </div>
+    </div>
+  );
+};
