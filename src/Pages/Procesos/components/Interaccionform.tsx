@@ -46,12 +46,17 @@ export const InteraccionForm = ({
           onChange={e => setField('fecha', e.target.value)}
         />
       </div>
-      <EstadoSelect
-        label="ESTADO DEL PROCESO"
-        value={form.estadoId || defaultEstado}
-        onChange={id => setField('estadoId', id)}
-        estados={estados}
-      />
+      {(() => {
+        const EstadoComp: any = EstadoSelect;
+        return (
+          <EstadoComp
+            label="ESTADO DEL PROCESO"
+            value={form.estadoId || defaultEstado}
+            onChange={(id: string) => setField('estadoId', id)}
+            estados={estados}
+          />
+        );
+      })()}
     </div>
 
     <div className="wfield">

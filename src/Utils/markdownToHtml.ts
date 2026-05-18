@@ -10,11 +10,11 @@ export const markdownToHtml: MarkdownToHtml = (markdown: string): string => {
     return `<h${level} class="co-black">${content.trim()}</h${level}>`;
   });
 
-  html = html.replace(/```([\w]*)\n([\s\S]*?)```/g, (match: string, lang: string, code: string): string => {
+  html = html.replace(/```([\w]*)\n([\s\S]*?)```/g, ( code: string): string => {
     return `<pre class="code-block"><code>${code.trim()}</code></pre>`;
   });
 
-  html = html.replace(/(\|.*\|)\n(\|:?-+:?\|)+\n((\|.*\|\n?)*)/g, (match: string, header: string, separator: string, body: string): string => {
+  html = html.replace(/(\|.*\|)\n(\|:?-+:?\|)+\n((\|.*\|\n?)*)/g, (header: string, body: string): string => {
     const headerCells = header
       .split('|')
       .filter((cell: string) => cell.trim() !== '')

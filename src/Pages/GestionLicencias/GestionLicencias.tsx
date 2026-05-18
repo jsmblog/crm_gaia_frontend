@@ -13,10 +13,8 @@ import './GestionLicencias.css';
 import type { Licencia, LicenciaPayload, EstadoLicencia } from '../../Interfaces/i_licencia';
 import type { Cliente } from '../../Interfaces/i_cliente';
 import type { Proceso } from '../../Interfaces/i_procesos';
+import type { HerramientaRpa } from '../../Interfaces/i_herramienta';
 
-// ─────────────────────────────────────────────────────────────
-// ProcesoMultiSelect
-// ─────────────────────────────────────────────────────────────
 interface ProcesoMultiSelectProps {
   label?: string;
   selected: string[];
@@ -101,9 +99,6 @@ const ProcesoMultiSelect = ({
   );
 };
 
-// ─────────────────────────────────────────────────────────────
-// Modal de Licencia
-// ─────────────────────────────────────────────────────────────
 interface LicenciaModalProps {
   initial?: Licencia | null;
   onClose: () => void;
@@ -142,7 +137,7 @@ const LicenciaModal = ({ initial, onClose, onSaved }: LicenciaModalProps) => {
   const [loading, setLoading] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [procesos, setProcesos] = useState<Proceso[]>([]);
-  const [herramientas, setHerramientas] = useState([]);
+const [herramientas, setHerramientas] = useState<HerramientaRpa[]>([])
   const [loadingCatalogos, setLoadingCatalogos] = useState(false);
 
   useEffect(() => {

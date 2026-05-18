@@ -43,7 +43,7 @@ interface Props {
 }
 
 export const DetallePanel = ({ proceso, onClose, onRefresh, onEdit }: Props) => {
-  const { estados, consultores } = useWizardCatalogos();
+  const { consultores } = useWizardCatalogos();
   const { toast, ToastContainer } = useToast();
   const [data, setData] = useState<Proceso>(proceso);
   const [editIds, setEditIds] = useState<string[]>([]);
