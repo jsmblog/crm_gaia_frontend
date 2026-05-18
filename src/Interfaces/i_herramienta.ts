@@ -1,5 +1,3 @@
-// Interfaces/i_herramienta.ts
-
 export interface HerramientaRpa {
   id:          string;
   nombre:      string;

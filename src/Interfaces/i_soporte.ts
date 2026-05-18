@@ -36,7 +36,7 @@ export interface SoportePayload {
   fecha_inicio?: string;
   fecha_fin?: string;
   horario?: string;
-  dias?: string;
+  dias?: string[];
   observacion?: string;
   responsable_cliente_id?: string;
   fecha_aprobacion?: string;

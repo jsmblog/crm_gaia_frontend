@@ -66,7 +66,7 @@ export const Calendario = () => {
   const { toast, ToastContainer } = useToast();
 
   const { user } = useAuth();
-const userId = user?.id ?? '';
+  const userId = user?.id ? String(user.id) : '';
 
   const [linked,      setLinked]      = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);

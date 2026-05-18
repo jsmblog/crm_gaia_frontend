@@ -18,7 +18,6 @@ import type {
 
 export const clienteService = {
 
-  // ── Clientes ────────────────────────────────────────────────
   getAll: (params?: {
     search?:   string;
     estado?:   EstadoCliente;
@@ -100,7 +99,6 @@ export const clienteService = {
       .delete<{ ok: boolean; mensaje: string }>(`/clientes/${clienteId}/seguimientos/${seguimientoId}`)
       .then(r => r.data),
 
-  // ── Catálogos ─────────────────────────────────────────────────
   getPaises: () =>
     connection_to_backend
       .get<CatalogoResponse<Pais>>("/catalogos/paises")

@@ -1,8 +1,5 @@
-// Services/proyectoService.ts
-
 import { connection_to_backend } from "../Connection/connection";
 import type {
-  Proyecto,
   ProyectoPayload,
   ProyectoUpdatePayload,
   ProyectoListResponse,
@@ -17,12 +14,11 @@ import type { Estado } from "./estadoService";
 
 export const proyectoService = {
 
-  // ── Proyectos ─────────────────────────────────────────────
 
   getAll: (params?: { clienteId?: string; activo?: boolean; search?: string; page?: number; limit?: number }) =>
     connection_to_backend
       .get<ProyectoListResponse>("/proyectos", { params })
-      .then(r => r.data),                       // { ok, total, page, pages, data[] }
+      .then(r => r.data),                      
 
   getById: (id: string) =>
     connection_to_backend
@@ -39,13 +35,11 @@ export const proyectoService = {
       .put<ProyectoResponse>(`/proyectos/${id}`, payload)
       .then(r => r.data.data),
 
-  /** Soft delete — activo = false */
   remove: (id: string) =>
     connection_to_backend
       .delete<{ ok: boolean; mensaje: string }>(`/proyectos/${id}`)
       .then(r => r.data),
 
-  // ── Áreas ─────────────────────────────────────────────────
 
   agregarAreas: (id: string, areas: string[]) =>
     connection_to_backend
@@ -57,8 +51,6 @@ export const proyectoService = {
       .delete<{ ok: boolean; mensaje: string }>(`/proyectos/${id}/areas/${areaId}`)
       .then(r => r.data),
 
-  // ── Miembros ──────────────────────────────────────────────
-
   agregarMiembro: (id: string, payload: MiembroPayload) =>
     connection_to_backend
       .post<{ ok: boolean; mensaje: string; data: any }>(`/proyectos/${id}/miembros`, payload)
@@ -69,7 +61,6 @@ export const proyectoService = {
       .delete<{ ok: boolean; mensaje: string }>(`/proyectos/${id}/miembros/${usuarioClienteId}`)
       .then(r => r.data),
 
-  // ── Herramientas ──────────────────────────────────────────
 
   asignarHerramienta: (id: string, payload: AsignarHerramientaPayload) =>
     connection_to_backend
@@ -80,8 +71,6 @@ export const proyectoService = {
     connection_to_backend
       .patch<{ ok: boolean; mensaje: string; data: any }>(`/proyectos/${id}/herramientas/${asignacionId}/estado`, { estado, motivo_cambio })
       .then(r => r.data),
-
-  // ── Línea de tiempo de estados ────────────────────────────
 
   getEstados: (id: string) =>
     connection_to_backend

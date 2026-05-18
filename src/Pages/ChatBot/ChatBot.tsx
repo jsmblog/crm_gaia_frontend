@@ -106,7 +106,7 @@ const useSpeechRecognition = () => {
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const result = event.results[i];
                 if (result.isFinal) {
-                    finalText = result[0].transcript; 
+                    finalText = result[0].transcript;
                 } else {
                     interimText += result[0].transcript;
                 }
@@ -136,7 +136,7 @@ const useSpeechRecognition = () => {
         if (!recognitionRef.current) return;
         try {
             recognitionRef.current.stop();
-        } catch (err) {}
+        } catch (err) { }
     }, []);
 
     const resetTranscript = useCallback(() => setTranscript(''), []);
@@ -159,7 +159,6 @@ export const ChatBot = () => {
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
     const [loadingList, setLoadingList] = useState(false);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [typingHtml, setTypingHtml] = useState<string>('');
     const [isTyping, setIsTyping] = useState(false);
     const [contextoData, setContextoData] = useState<ContextoChat | null>(null);
@@ -171,7 +170,7 @@ export const ChatBot = () => {
 
     const [optionsOpen, setOptionsOpen] = useState(false);
     const [webSearch, setWebSearch] = useState(false);
-    const [allowAttach, setAllowAttach] = useState(true);
+    const allowAttach = true;
     const optionsRef = useRef<HTMLDivElement>(null);
 
     const [archivos, setArchivos] = useState<File[]>([]);
@@ -182,19 +181,16 @@ export const ChatBot = () => {
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const typingRef = useRef<boolean>(false);
 
-    // Hook de voz mejorado
     const { transcript, listening, startListening, stopListening, resetTranscript, browserSupport } = useSpeechRecognition();
 
-    // Sincronizar transcript con input - sin duplicación
     useEffect(() => {
         if (transcript) {
-            // Si estamos escuchando, reemplazamos el input por el transcript actual (no acumulamos)
+            
             setInput(transcript);
-            resetTranscript(); // Limpiamos para la siguiente frase
+            resetTranscript(); 
         }
     }, [transcript, resetTranscript]);
 
-    // Detener grabación al enviar
     useEffect(() => {
         if (sending && listening) stopListening();
     }, [sending, listening, stopListening]);
@@ -253,7 +249,6 @@ export const ChatBot = () => {
         setActiveChat(chat);
         setView('chat');
         setSugerencias([]);
-        setErrorMsg(null);
         setArchivos([]);
         setPreviews([]);
         setContextoData(null);
@@ -271,7 +266,7 @@ export const ChatBot = () => {
             const chat = await chatService.crear({});
             setChats(prev => [chat, ...prev]);
             await abrirChat(chat);
-        } catch { /* silencioso */ }
+        } catch { }
     };
 
     const eliminarChat = async (e: React.MouseEvent, chatId: string) => {
@@ -289,7 +284,7 @@ export const ChatBot = () => {
                 setArchivos([]);
                 setPreviews([]);
             }
-        } catch {}
+        } catch { }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -356,7 +351,6 @@ export const ChatBot = () => {
         setArchivos([]);
         setPreviews([]);
         setSending(true);
-        setErrorMsg(null);
         setSugerencias([]);
 
         try {
@@ -400,7 +394,7 @@ export const ChatBot = () => {
         } catch (err: any) {
             setSending(false);
             const msg = err?.response?.data?.mensaje;
-            setErrorMsg(msg || 'No se pudo procesar tu solicitud. Intenta de nuevo.');
+            toast.error(msg || 'No se pudo procesar tu solicitud. Intenta de nuevo.');
         } finally {
             inputRef.current?.focus();
         }
@@ -410,7 +404,6 @@ export const ChatBot = () => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
     };
 
-    // Subcomponentes JSX
     const sidebarJSX = (
         <>
             <div className="chatbot-sidebar__toolbar">
@@ -529,8 +522,6 @@ export const ChatBot = () => {
                         <span className="chatbot-bubble-msg__cursor">▍</span>
                     </div>
                 )}
-
-                {errorMsg && <div className="chatbot-error-msg">{errorMsg}</div>}
                 <div ref={bottomRef} />
             </div>
 
@@ -602,7 +593,6 @@ export const ChatBot = () => {
                     )}
                 </div>
 
-                {/* Botón de voz mejorado */}
                 {browserSupport && (
                     <button
                         className={`chatbot-voice-btn ${listening ? 'chatbot-voice-btn--recording' : ''}`}

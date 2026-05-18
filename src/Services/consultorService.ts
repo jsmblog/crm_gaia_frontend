@@ -1,8 +1,5 @@
-// Services/consultorService.ts
-
 import { connection_to_backend } from "../Connection/connection";
 import type {
-  Consultor,
   ConsultorPayload,
   ConsultorListResponse,
   ConsultorResponse,
@@ -10,12 +7,10 @@ import type {
 
 export const consultorService = {
 
-  /** Lista paginada. Acepta filtros opcionales. */
   getAll: (params?: { search?: string; rol?: string; activo?: boolean; page?: number; limit?: number }) =>
     connection_to_backend
       .get<ConsultorListResponse>("/consultores", { params })
-      .then(r => r.data),             // devuelve { ok, total, page, pages, data[] }
-
+      .then(r => r.data),            
   getById: (id: string) =>
     connection_to_backend
       .get<ConsultorResponse>(`/consultores/${id}`)

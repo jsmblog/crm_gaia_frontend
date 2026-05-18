@@ -5,9 +5,6 @@ import { useToast } from '../../Hooks/useToast';
 import './Consultores.css';
 import type { Consultor, ConsultorPayload } from '../../Interfaces/i_consultor';
 
-// ─────────────────────────────────────────────────────────────
-// Modal — Crear / Editar consultor
-// ─────────────────────────────────────────────────────────────
 interface ModalProps {
   initial?: Consultor | null;
   onClose: () => void;
@@ -141,9 +138,6 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
-// Confirm desactivar (soft delete)
-// ─────────────────────────────────────────────────────────────
 interface ConfirmProps { nombre: string; onConfirm: () => void; onCancel: () => void; }
 
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: ConfirmProps) => (
@@ -169,9 +163,6 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: ConfirmProps) => (
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────
-// Página principal
-// ─────────────────────────────────────────────────────────────
 export const Consultores = () => {
   const { toast, ToastContainer } = useToast();
   const [consultores, setConsultores] = useState<Consultor[]>([]);

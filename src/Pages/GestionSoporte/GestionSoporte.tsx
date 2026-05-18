@@ -1,4 +1,3 @@
-// components/GestionSoporte.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Pencil, X, Check, Search, Trash2 } from 'lucide-react';
 import { soporteService } from '../../Services/soporteService';
@@ -7,38 +6,17 @@ import { useToast } from '../../Hooks/useToast';
 import './GestionSoporte.css';
 import type { Soporte, SoportePayload, EstadoSoporte } from '../../Interfaces/i_soporte';
 import type { Cliente, UsuarioCliente } from '../../Interfaces/i_cliente';
+import { EMPTY_SOPORTE } from '../../Constants/EMPTY_SOPORTE';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-// Helpers para separar/unir el horario
-const parseHorario = (horario: string) => {
+const parseHorario = (horario?: string) => {
   const match = horario?.match(/^(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})$/);
   return { inicio: match?.[1] ?? '09:00', fin: match?.[2] ?? '18:00' };
 };
 const buildHorario = (inicio: string, fin: string) =>
   inicio && fin ? `${inicio} - ${fin}` : '';
 
-// ─────────────────────────────────────────────────────────────
-const EMPTY_SOPORTE: SoportePayload = {
-  cliente_id: '',
-  estado: 'En Aprobación',
-  propuesta: '',
-  horas: 0,
-  tarifa: 0,
-  valor_paquete: 0,
-  fecha_inicio: '',
-  fecha_fin: '',
-  horario: '09:00 - 18:00',
-  dias: [],
-  observacion: '',
-  responsable_cliente_id: '',
-  fecha_aprobacion: '',
-  fecha_rechazo: '',
-  motivo_rechazo: '',
-  fecha_inicio_soporte: '',
-};
-
-// ─────────────────────────────────────────────────────────────
 interface SoporteModalProps {
   initial?: Soporte | null;
   onClose: () => void;
@@ -50,7 +28,6 @@ const SoporteModal = ({ initial, onClose, onSaved }: SoporteModalProps) => {
 
   const initDias = (): string[] => {
     if (!initial?.dias) return [];
-    // Soportar tanto array como string legado
     if (Array.isArray(initial.dias)) return initial.dias;
     return (initial.dias as string).split(',').map(d => d.trim()).filter(Boolean);
   };
@@ -79,11 +56,9 @@ const SoporteModal = ({ initial, onClose, onSaved }: SoporteModalProps) => {
     return { ...EMPTY_SOPORTE, dias: [] };
   });
 
-  // Estado local para las dos partes del horario
   const [horaInicio, setHoraInicio] = useState(() => parseHorario(form.horario).inicio);
   const [horaFin, setHoraFin] = useState(() => parseHorario(form.horario).fin);
 
-  // Sincronizar horario combinado al cambiar cualquiera de los dos
   useEffect(() => {
     setForm(p => ({ ...p, horario: buildHorario(horaInicio, horaFin) }));
   }, [horaInicio, horaFin]);
@@ -375,9 +350,6 @@ const ConfirmAction = ({ title, message, confirmText, onConfirm, onCancel }: Con
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────
-// Página principal de Gestión de Soporte
-// ─────────────────────────────────────────────────────────────
 export const GestionSoporte = () => {
   const { toast, ToastContainer } = useToast();
   const [soportes, setSoportes] = useState<Soporte[]>([]);

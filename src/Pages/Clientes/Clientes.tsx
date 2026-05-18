@@ -43,7 +43,6 @@ export const RELACION_CFG: Record<string, { label: string; cls: string; icon: Re
   cerrado:   { label: 'Cerrado',   cls: 'rel--cerrado',  icon: <ThumbsDown size={10} /> },
 };
 
-// ─── Helpers generales ──────────────────────────────────────────
 const fmtMoney = (v?: number | null) => v != null ? `$${Number(v).toFixed(2)}` : '—';
 const numOrNull = (s: string): number | null => s.trim() === '' ? null : +s;
 const fmtDate  = (iso?: string | null) => iso
@@ -61,9 +60,6 @@ const EMPTY_USUARIO: UsuarioClientePayload = {
   nombre: '', cargo: '', email: '', telefono: '', linkedin: '',
 };
 
-// ══════════════════════════════════════════════════════════════
-// Modal — Cliente
-// ══════════════════════════════════════════════════════════════
 interface ClienteModalProps {
   initial?: Cliente | null;
   onClose: () => void;
@@ -464,9 +460,6 @@ const SeguimientoModal = ({
   );
 };
 
-// ══════════════════════════════════════════════════════════════
-// Modal — Usuario del cliente
-// ══════════════════════════════════════════════════════════════
 interface UsuarioModalProps {
   clienteId: string;
   initial?:  UsuarioCliente | null;
@@ -550,9 +543,6 @@ const UsuarioModal = ({ clienteId, initial, onClose, onSaved }: UsuarioModalProp
   );
 };
 
-// ══════════════════════════════════════════════════════════════
-// Confirm Delete
-// ══════════════════════════════════════════════════════════════
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   nombre: string; onConfirm: () => void; onCancel: () => void;
 }) => (
@@ -578,9 +568,6 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   </div>
 );
 
-// ══════════════════════════════════════════════════════════════
-// CompartirModal
-// ══════════════════════════════════════════════════════════════
 const CompartirModal = ({ usuario, cliente, consultores, onClose }: {
   usuario: UsuarioCliente; cliente: Cliente; consultores: Consultor[]; onClose: () => void;
 }) => {
@@ -669,9 +656,6 @@ const CompartirModal = ({ usuario, cliente, consultores, onClose }: {
   );
 };
 
-// ══════════════════════════════════════════════════════════════
-// ClientePanel
-// ══════════════════════════════════════════════════════════════
 type PanelTab = 'usuarios' | 'seguimientos';
 
 const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
@@ -699,7 +683,6 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
     fetchSeguimientos();
   }, [cliente.id]);
 
-  // Re-polling mientras haya seguimientos sin contexto IA
   useEffect(() => {
     if (seguimientos.some(s => s.contexto_seguimiento === null)) {
       const timer = setTimeout(fetchSeguimientos, 5000);
@@ -707,7 +690,6 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
     }
   }, [seguimientos]);
 
-  // ── Capacidades del agente para el panel abierto ────────────
   useEffect(() => {
     const unreg = [
 
@@ -769,7 +751,7 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
     ];
 
     return () => unreg.forEach(fn => fn());
-  }, [cliente.id]); // solo re-registra si cambia el cliente abierto
+  }, [cliente.id]); 
 
   const fetchUsuarios = async () => {
     try { setUsuarios(await clienteService.getUsuarios(cliente.id)); }
@@ -1014,9 +996,6 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
   );
 };
 
-// ══════════════════════════════════════════════════════════════
-// Página principal — Clientes
-// ══════════════════════════════════════════════════════════════
 export const Clientes = () => {
   const { toast, ToastContainer } = useToast();
   const [clientes,  setClientes]  = useState<Cliente[]>([]);
@@ -1101,7 +1080,7 @@ export const Clientes = () => {
 
       agentBus.register('clientes:updateEstado', async (payload) => {
         const clientName = payload.clientName as string;
-        const estado     = payload.estado as string;
+        const estado     = payload.estado as EstadoCliente;
         const lista      = await loadIfEmpty();
 
         const client = lista.find(c =>
@@ -1216,11 +1195,9 @@ export const Clientes = () => {
       }),
     ];
 
-    // Handlers registrados una sola vez; los refs garantizan datos frescos
     return () => unreg.forEach(fn => fn());
-  }, []); // ← dependencias vacías intencionales
+  }, []); 
 
-  // ── Filtrado local ──────────────────────────────────────────
   const filtered = useMemo(() =>
     clientes.filter(c =>
       c.empresa.toLowerCase().includes(query.toLowerCase()) ||

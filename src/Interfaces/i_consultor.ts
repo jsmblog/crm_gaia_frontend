@@ -21,7 +21,6 @@ export interface ConsultorPayload {
   activo?:   boolean;
 }
 
-// Respuesta paginada — GET /consultores
 export interface ConsultorListResponse {
   ok:    boolean;
   total: number;
@@ -30,7 +29,6 @@ export interface ConsultorListResponse {
   data:  Consultor[];
 }
 
-// Respuesta individual — GET /id · POST · PUT
 export interface ConsultorResponse {
   ok:      boolean;
   mensaje: string;

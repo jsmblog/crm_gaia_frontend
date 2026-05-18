@@ -212,7 +212,6 @@ listarInteraccionesEstimacion: (procesoId: string) =>
 
     return procesoService.getById(id);
   },
-  // Añadir junto a los de levantamiento/estimacion:
   listarInteraccionesPropuesta: (procesoId: string) =>
     connection_to_backend.get(`/procesos/${procesoId}/propuesta/interacciones`),
 

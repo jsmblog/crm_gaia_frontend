@@ -10,7 +10,6 @@ export const connection_to_backend = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ─── Request ────────────────────────────────────────────────────────────────
 connection_to_backend.interceptors.request.use(
   config => {
     const token = Cookies.get(COOKIE_TOKEN);
@@ -19,7 +18,6 @@ connection_to_backend.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Deja que el navegador ponga el Content-Type correcto en FormData
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     }
@@ -29,7 +27,6 @@ connection_to_backend.interceptors.request.use(
   error => Promise.reject(error)
 );
 
-// ─── Response ────────────────────────────────────────────────────────────────
 connection_to_backend.interceptors.response.use(
   response => response,
   error => {
@@ -45,7 +42,6 @@ connection_to_backend.interceptors.response.use(
   }
 );
 
-// ─── Helpers para AuthContext ────────────────────────────────────────────────
 const EXPIRES = 1 / 3; // 8 horas
 
 export const saveSession = (token: string, user: object) => {

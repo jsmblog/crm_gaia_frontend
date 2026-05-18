@@ -1,5 +1,3 @@
-// Interfaces/i_area.ts
-
 export interface Area {
   id:          string;
   nombre:      string;

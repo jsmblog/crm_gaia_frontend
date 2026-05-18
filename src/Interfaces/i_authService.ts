@@ -1,3 +1,5 @@
+import type { User } from "./i_user";
+
 export interface LoginPayload {
   email: string;
   password: string;

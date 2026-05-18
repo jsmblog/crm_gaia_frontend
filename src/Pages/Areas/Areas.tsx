@@ -5,9 +5,6 @@ import { useToast }     from '../../Hooks/useToast';
 import './Areas.css';
 import type { Area, AreaPayload } from '../../Interfaces/i_area';
 
-// ─────────────────────────────────────────────────────────────
-// Modal — Crear / Editar
-// ─────────────────────────────────────────────────────────────
 interface ModalProps {
   initial?: Area | null;
   onClose:  () => void;
@@ -80,7 +77,6 @@ const AreaModal = ({ initial, onClose, onSaved }: ModalProps) => {
             />
           </div>
 
-          {/* Estado — solo al editar */}
           {initial && (
             <div className="mfield">
               <label className="mfield__label">Estado</label>
@@ -110,9 +106,6 @@ const AreaModal = ({ initial, onClose, onSaved }: ModalProps) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
-// Confirm desactivar
-// ─────────────────────────────────────────────────────────────
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   nombre: string; onConfirm: () => void; onCancel: () => void;
 }) => (
@@ -138,9 +131,6 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────
-// Página principal
-// ─────────────────────────────────────────────────────────────
 export const Areas = () => {
   const { toast, ToastContainer } = useToast();
   const [areas, setAreas]           = useState<Area[]>([]);
@@ -200,7 +190,6 @@ export const Areas = () => {
           </button>
         </div>
 
-        {/* Grid de chips cuando hay pocos — vista compacta */}
         {!loading && filtered.length > 0 && filtered.length <= 20 && (
           <div className="areas-chips">
             {filtered.map(a => (

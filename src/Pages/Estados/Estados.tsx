@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X, Check, Tag, RotateCcw } from "lucide-react";
-import { estadoService, type Estado, type EstadoPayload } from "../../Services/estadoService";
+import { estadoService, type Estado} from "../../Services/estadoService";
 import { useToast } from "../../Hooks/useToast";
 import "./Estados.css";
 
-// ── Modal ──────────────────────────────────────────────────────
 interface ModalProps {
   initial?: Estado | null;
   onClose: () => void;
@@ -71,7 +70,6 @@ const EstadoModal = ({ initial, onClose, onSaved }: ModalProps) => {
   );
 };
 
-// ── Página principal ───────────────────────────────────────────
 export const Estados = () => {
   const { toast, ToastContainer } = useToast();
   const [estados, setEstados] = useState<Estado[]>([]);

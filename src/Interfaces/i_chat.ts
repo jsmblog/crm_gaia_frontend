@@ -1,5 +1,3 @@
-// Interfaces/i_chat.ts
-
 import type { AgentAction } from "../Components/AI/actionDispactcher";
 
 export interface Chat {
@@ -63,8 +61,6 @@ export interface EnviarMensajeResponse {
     tokens_acumulados: number;
   };
 }
-
-// ── Payloads ──────────────────────────────────────────────────
 
 export interface CrearChatPayload {
   consultor_id: string;

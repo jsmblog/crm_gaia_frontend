@@ -5,9 +5,6 @@ import { useToast }   from '../../Hooks/useToast';
 import './Roles.css';
 import type { Rol, RolPayload } from '../../Interfaces/i_rol';
 
-// ─────────────────────────────────────────────────────────────
-// Modal — Crear / Editar
-// ─────────────────────────────────────────────────────────────
 const RolModal = ({ initial, onClose, onSaved }: {
   initial?: Rol | null; onClose: () => void; onSaved: () => void;
 }) => {
@@ -97,9 +94,6 @@ const RolModal = ({ initial, onClose, onSaved }: {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
-// Confirm desactivar
-// ─────────────────────────────────────────────────────────────
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   nombre: string; onConfirm: () => void; onCancel: () => void;
 }) => (
@@ -125,9 +119,6 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────
-// Página principal
-// ─────────────────────────────────────────────────────────────
 export const Roles = () => {
   const { toast, ToastContainer } = useToast();
   const [roles, setRoles]           = useState<Rol[]>([]);
