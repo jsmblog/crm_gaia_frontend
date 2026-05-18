@@ -6,7 +6,6 @@
   box-sizing: border-box;
   list-style: none;
   text-decoration: none;
-  user-select: none;
   resize: none !important;
 }
 
@@ -29,4 +28,17 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --transition: 180ms ease;
+}
+
+@keyframes ai-glow {
+  0%   { outline: 2px solid transparent; outline-offset: 0px; }
+  30%  { outline: 3px solid var(--dark);     outline-offset: 4px; background-color: var(--white) !important; }
+  70%  { outline: 3px solid var(--dark);     outline-offset: 4px; background-color: var(--white) !important; }
+  100% { outline: 2px solid transparent; outline-offset: 0px; }
+}
+
+.ai-highlight {
+  animation: ai-glow 2.5s ease-in-out forwards;
+  border-radius: 6px;
+  transition: background-color 0.3s;
 }

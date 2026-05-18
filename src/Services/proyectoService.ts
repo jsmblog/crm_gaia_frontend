@@ -12,8 +12,8 @@ import type {
   EstadoHerramienta,
   EstadoProyectoPayload,
   EstadoProyectoEntry,
-  EstadoProyectoEnum,
 } from "../Interfaces/i_proyecto";
+import type { Estado } from "./estadoService";
 
 export const proyectoService = {
 
@@ -85,19 +85,19 @@ export const proyectoService = {
 
   getEstados: (id: string) =>
     connection_to_backend
-      .get<{ ok: boolean; data: EstadoProyectoEntry[]; estado_actual: EstadoProyectoEnum }>(`/proyectos/${id}/estados`)
+      .get<{ ok: boolean; data: EstadoProyectoEntry[]; estado_actual: Estado }>(`/proyectos/${id}/estados`)
       .then(r => r.data),
 
   registrarEstado: (id: string, payload: EstadoProyectoPayload) =>
     connection_to_backend
-      .post<{ ok: boolean; mensaje: string; data: EstadoProyectoEntry; estado_actual: EstadoProyectoEnum }>(
+      .post<{ ok: boolean; mensaje: string; data: EstadoProyectoEntry; estado_actual: Estado }>(
         `/proyectos/${id}/estados`, payload
       )
       .then(r => r.data),
 
   eliminarUltimoEstado: (id: string, estadoId: string) =>
     connection_to_backend
-      .delete<{ ok: boolean; mensaje: string; estado_actual: EstadoProyectoEnum }>(`/proyectos/${id}/estados/${estadoId}`)
+      .delete<{ ok: boolean; mensaje: string; estado_actual: Estado }>(`/proyectos/${id}/estados/${estadoId}`)
       .then(r => r.data),
 
 };

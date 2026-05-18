@@ -11,7 +11,7 @@ const listeners: Set<Listener> = new Set();
 
 const notify = () => listeners.forEach(fn => fn([...toasts]));
 
-const addToast = (message: string, type: ToastType) => {
+export const addToast = (message: string, type: ToastType) => {
   const id = `${Date.now()}-${Math.random()}`;
   toasts = [...toasts, { id, message, type }];
   notify();

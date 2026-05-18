@@ -56,7 +56,6 @@ export const clienteService = {
       .patch<ClienteResponse>(`/clientes/${id}/restaurar`)
       .then(r => r.data.data),
 
-  // ── Usuarios del cliente ─────────────────────────────────────
   getUsuarios: (clienteId: string) =>
     connection_to_backend
       .get<UsuarioListResponse>(`/clientes/${clienteId}/usuarios`)

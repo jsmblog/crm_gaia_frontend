@@ -1,5 +1,3 @@
-// Interfaces/i_consultor.ts
-
 export type RolConsultor = 'consultor' | 'admin';
 
 export interface Consultor {

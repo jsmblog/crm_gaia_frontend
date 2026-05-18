@@ -8,9 +8,10 @@ import {
   UserCheck,
   LayoutGrid,
   Shield,
-  DownloadCloud,
   Cpu,
-  Brain,
+  CalendarDays,
+  Headset,
+  FileLock,
 } from 'lucide-react';
 
 export const NAV = [
@@ -26,19 +27,21 @@ export const NAV = [
   {
     group: 'Registro',
     items: [
-      { to: '/procesos',    icon: Target,      label: 'Gestión de proyectos'    },
       { to: '/clientes',    icon: Users,       label: 'Clientes'    },
-      { to: '/consultores', icon: UserCheck,   label: 'Consultores' },
-      { to: '/areas',       icon: LayoutGrid,  label: 'Areas'       },
-      { to: '/roles',       icon: Shield,      label: 'Roles'       },
+      { to: '/gestion/proyectos',    icon: Target,      label: 'Gestión de proyectos'    },
+      { to: '/gestion/soporte',icon: Headset,        label: ' Soporte'       },
+      { to: '/gestionar/licencias',icon: FileLock,        label: ' Licencias'       },
     ],
   },
   {
-    group: 'Herramientas',
+    group: 'Datos Maestros',
     items: [
-      { to: '/exportar',         icon: DownloadCloud, label: 'Exportar CSV' },
-      { to: '/herramientas/rpa', icon: Cpu,           label: 'RPA'          },
+      { to: '/areas',       icon: LayoutGrid,  label: 'Areas'       },
+      { to: '/calendario',       icon: CalendarDays,      label: 'Calendario'       },
+      { to: '/consultores', icon: UserCheck,   label: 'Consultores' },
       { to: '/gestionar/estados',icon: Target,        label: 'Gestionar Estados'       },
+      { to: '/herramientas/rpa', icon: Cpu,           label: 'Herramientas RPA'          },
+      { to: '/roles',       icon: Shield,      label: 'Roles'       },
     ],
   },
 ];

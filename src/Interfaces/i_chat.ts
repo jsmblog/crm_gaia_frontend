@@ -1,5 +1,7 @@
 // Interfaces/i_chat.ts
 
+import type { AgentAction } from "../Components/AI/actionDispactcher";
+
 export interface Chat {
   id:           string;
   consultor_id: string;
@@ -50,15 +52,15 @@ export interface MensajesResponse {
 }
 
 export interface EnviarMensajeResponse {
-  ok:          boolean;
-  respuesta:   string;
+  ok: boolean;
+  respuesta: string;
   tiene_datos: boolean;
   sugerencias: string[];
-  contexto?:any;
-  debug: {
-    query_generada: string | null;
-    total_filas:    number;
-    error_sql:      string | null;
+  actions: AgentAction[];  
+  contexto?: {
+    resumen: string | null;
+    mensajes_resumidos: number;
+    tokens_acumulados: number;
   };
 }
 

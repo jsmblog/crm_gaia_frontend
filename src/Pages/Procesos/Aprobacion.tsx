@@ -1,17 +1,20 @@
-import { Check, Loader, Lock } from 'lucide-react';
-import type { WizardPayload } from '../../Interfaces/i_procesos';
-import { TODAY, type Setter } from '../../Constants/procesos';
+import { Lock } from 'lucide-react';
+import { TODAY } from '../../Constants/procesos';
+import { EstadoSelect } from './Estadoselect';
+import { InteraccionesSection } from './components/Interaccionessection';
+import { StepSaveRow } from './components/Stepshared';
+import { useInteracciones } from '../../Hooks/Useinteracciones';
+import { aprobacionService } from './service/procesoServiceAdapters';
+import type { Props } from '../../Interfaces/i_procesos';
+import { useWizardCatalogos } from './WizardContext';
 
-interface Props {
-  d: Partial<WizardPayload>;
-  set: Setter;
-  onSave: () => Promise<void>;
-  saving: boolean;
-  saved: boolean;
-  locked: boolean;
-}
+export const Aprobacion = ({
+  d, set,
+  wizardProcessId, onSave, saving, saved, locked,
+}: Props) => {
+  const { consultores } = useWizardCatalogos();
+  const int = useInteracciones(wizardProcessId ?? undefined, aprobacionService);
 
-export const Step4 = ({ d, set, onSave, saving, saved, locked }: Props) => {
   if (locked) {
     return (
       <div className="step-body step-locked">
@@ -23,13 +26,15 @@ export const Step4 = ({ d, set, onSave, saving, saved, locked }: Props) => {
 
   return (
     <div className="step-body">
+      {/* ── ANÁLISIS PRELIMINAR ── */}
       <p className="step-section-title">ANÁLISIS PRELIMINAR</p>
 
       <div className="wrow">
         <div className="wfield">
           <label className="wfield__label">FECHA PRELIMINAR</label>
           <input type="date" className="wfield__input"
-            value={d.pre_fecha ?? ''} onChange={e => set('pre_fecha', e.target.value)} />
+            value={d.pre_fecha ?? ''}
+            onChange={e => set('pre_fecha', e.target.value)} />
         </div>
         <div className="wfield">
           <label className="wfield__label">¿VIABLE?</label>
@@ -45,17 +50,23 @@ export const Step4 = ({ d, set, onSave, saving, saved, locked }: Props) => {
 
       <div className="wfield">
         <label className="wfield__label">RESULTADO / CONCLUSIONES</label>
-        <textarea className="wfield__input wfield__textarea" placeholder="Conclusiones del análisis preliminar…"
-          value={d.pre_resultado ?? ''} onChange={e => set('pre_resultado', e.target.value)} />
+        <textarea className="wfield__input wfield__textarea"
+          placeholder="Conclusiones del análisis preliminar…"
+          value={d.pre_resultado ?? ''}
+          onChange={e => set('pre_resultado', e.target.value)} />
       </div>
 
       <div className="step-divider" />
+
+      {/* ── APROBACIÓN ── */}
       <p className="step-section-title">APROBACIÓN</p>
 
       <div className="wrow">
         <div className="wfield">
           <label className="wfield__label">RESULTADO</label>
-          <select className="wfield__input" value={d.apr_aprobado ?? ''} onChange={e => set('apr_aprobado', e.target.value)}>
+          <select className="wfield__input"
+            value={d.apr_aprobado ?? ''}
+            onChange={e => set('apr_aprobado', e.target.value)}>
             <option value="">— Pendiente —</option>
             <option value="Aprobado">✓ Aprobado</option>
             <option value="Rechazado">✗ Rechazado</option>
@@ -64,7 +75,8 @@ export const Step4 = ({ d, set, onSave, saving, saved, locked }: Props) => {
         <div className="wfield">
           <label className="wfield__label">FECHA APROBACIÓN</label>
           <input type="date" className="wfield__input"
-            value={d.apr_fecha ?? TODAY} onChange={e => set('apr_fecha', e.target.value)} />
+            value={d.apr_fecha ?? TODAY}
+            onChange={e => set('apr_fecha', e.target.value)} />
         </div>
       </div>
 
@@ -72,19 +84,32 @@ export const Step4 = ({ d, set, onSave, saving, saved, locked }: Props) => {
         <div className="wfield">
           <label className="wfield__label">MOTIVO DE RECHAZO <span className="wfield__req">*</span></label>
           <input className="wfield__input" placeholder="Indica el motivo del rechazo"
-            value={d.apr_motivo_rechazo ?? ''} onChange={e => set('apr_motivo_rechazo', e.target.value)} />
+            value={d.apr_motivo_rechazo ?? ''}
+            onChange={e => set('apr_motivo_rechazo', e.target.value)} />
         </div>
       )}
 
-      <div className="step-save-row">
-        <button className="step-save-btn" onClick={onSave} disabled={saving}>
-          {saving
-            ? <><Loader size={14} className="spin" /> Guardando…</>
-            : <><Check size={14} /> {saved ? 'Actualizar aprobación' : 'Guardar Preliminar y Aprobación'}</>
-          }
-        </button>
-        {saved && <span className="step-save-hint">✓ Etapa guardada</span>}
-      </div>
+      <EstadoSelect
+        label="ESTADO DEL PROCESO"
+        value={d.apr_estado_id ?? 'En Aprobacion'}
+        onChange={id => set('apr_estado_id', id)}
+      />
+
+      {saved && (
+        <InteraccionesSection
+          {...int}
+          consultores={consultores}
+          defaultEstado="En Aprobacion"
+        />
+      )}
+
+      <StepSaveRow
+        onSave={onSave}
+        saving={saving}
+        saved={saved}
+        labels={{ idle: 'Guardar Aprobación', saved: 'Actualizar aprobación' }}
+        hint="✓ Etapa guardada"
+      />
     </div>
   );
 };

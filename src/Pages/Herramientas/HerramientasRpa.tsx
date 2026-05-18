@@ -1,16 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Search, Plus, Pencil, Trash2, X, Check,
-  Cpu, Building2, GitBranch, FileText,
+  Cpu, Building2,
 } from 'lucide-react';
 import { herramientaService }  from '../../Services/herramientaService';
 import { useToast }             from '../../Hooks/useToast';
 import './HerramientasRpa.css';
 import type { HerramientaRpa, HerramientaPayload } from '../../Interfaces/i_herramienta';
 
-// ─────────────────────────────────────────────────────────────
-// Modal — Crear / Editar
-// ─────────────────────────────────────────────────────────────
 interface ModalProps {
   initial?: HerramientaRpa | null;
   onClose:  () => void;
@@ -132,9 +129,6 @@ const HerramientaModal = ({ initial, onClose, onSaved }: ModalProps) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
-// Confirm desactivar
-// ─────────────────────────────────────────────────────────────
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   nombre: string; onConfirm: () => void; onCancel: () => void;
 }) => (
@@ -160,9 +154,6 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────
-// Página principal
-// ─────────────────────────────────────────────────────────────
 export const HerramientasRpa = () => {
   const { toast, ToastContainer } = useToast();
   const [herramientas, setHerramientas] = useState<HerramientaRpa[]>([]);

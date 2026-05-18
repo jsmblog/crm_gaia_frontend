@@ -1,4 +1,3 @@
-// ─── Catálogos ────────────────────────────────────────────────
 export interface Pais {
   id:         number;
   nombre:     string;
@@ -17,7 +16,6 @@ export interface Rubro {
   descripcion: string | null;
 }
 
-// ─── Enums ────────────────────────────────────────────────────
 export type EstadoCliente = "Lead" | "Contactado" | "Activo" | "Inactivo";
 
 export type MedioSeguimiento =
@@ -72,7 +70,6 @@ export interface EstadoObj {
   id:     string;
   nombre: string;
 }
-// ─── Cliente ──────────────────────────────────────────────────
 export interface Cliente {
   id:                     string;
   empresa:                string;
@@ -92,7 +89,6 @@ export interface Cliente {
   createdAt:              string;
   updatedAt:              string;
   deletedAt:              string | null;
-  // includes
   pais?:        Pais   | null;
   ciudad?:      Ciudad | null;
   rubro?:       Rubro  | null;

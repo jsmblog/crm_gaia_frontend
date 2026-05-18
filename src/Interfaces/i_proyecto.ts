@@ -1,3 +1,5 @@
+import type { Estado } from "../Services/estadoService";
+
 export interface AreaBasica {
   id:     string;
   nombre: string;
@@ -33,25 +35,10 @@ export interface AsignacionHerramienta {
   };
 }
 
-export type EstadoProyectoEnum =
-  | 'Lead'
-  | 'Pendiente'
-  | 'Contactado'
-  | 'Levantamiento'
-  | 'Estimacion'
-  | 'Propuesta'
-  | 'En Aprobacion'
-  | 'Aprobado'
-  | 'Rechazado'
-  | 'En Ejecución'
-  | 'Cerrado'
-  | 'Stand BY'
-  | 'Facturada';
-
 export interface EstadoProyectoEntry {
   id:           string;
   proyecto_id:  string;
-  estado:       EstadoProyectoEnum;
+  estado:       Estado;
   observacion:  string | null;
   consultor_id: string | null;
   fecha:        string;
@@ -60,7 +47,7 @@ export interface EstadoProyectoEntry {
 }
 
 export interface EstadoProyectoPayload {
-  estado:        EstadoProyectoEnum;
+  estado:        Estado;
   observacion?:  string;
   consultor_id?: string;
   fecha?:        string;
@@ -74,9 +61,7 @@ export interface Proyecto {
   cliente_id:      string;
   nombre:          string;
   descripcion:     string | null;
-  horas_estimadas: number | null;
-  costo_estimado:  number | null;
-  estado_actual:   EstadoProyectoEnum;
+  estado_actual:   Estado;
   activo:          boolean;
   createdAt:       string;
   updatedAt:       string;
@@ -95,14 +80,12 @@ export interface ProyectoPayload {
   cliente_id:       string;
   nombre:           string;
   descripcion?:     string;
-  horas_estimadas?: number;
   areas?:           string[];
 }
 
 export interface ProyectoUpdatePayload {
   nombre?:          string;
   descripcion?:     string;
-  horas_estimadas?: number | null;
   activo?:          boolean;
 }
 

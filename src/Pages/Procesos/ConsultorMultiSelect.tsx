@@ -3,15 +3,21 @@ import { Users, User, X, ChevronDown } from 'lucide-react';
 import type { Opt } from '../../Constants/procesos';
 
 interface Props {
-  label: string;
+  label?: string;
   selected: string[];
   onChange: (ids: string[]) => void;
   consultores: Opt[];
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const ConsultorMultiSelect = ({
-  label, selected, onChange, consultores, placeholder = '— Añadir consultor —',
+  label,
+  selected,
+  onChange,
+  consultores,
+  placeholder = '— Añadir consultor —',
+  disabled = false,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -24,8 +30,10 @@ export const ConsultorMultiSelect = ({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    if (disabled) return;
     onChange(selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id]);
+  };
 
   const disponibles = consultores.filter(c => !selected.includes(c.id));
   const seleccionados = consultores.filter(c => selected.includes(c.id));
@@ -38,20 +46,27 @@ export const ConsultorMultiSelect = ({
           {label}
         </label>
       )}
+
       {seleccionados.length > 0 && (
         <div className="cms__chips">
           {seleccionados.map(c => (
-            <span key={c.id} className="cms__chip">
+            <span key={c.id} className={`cms__chip ${disabled ? 'cms__chip--disabled' : ''}`}>
               <User size={10} />
               {c.nombre}
-              <button type="button" className="cms__chip-remove" onClick={() => toggle(c.id)}>
-                <X size={9} />
-              </button>
+              {!disabled && (
+                <button type="button" className="cms__chip-remove" onClick={() => toggle(c.id)}>
+                  <X size={9} />
+                </button>
+              )}
             </span>
           ))}
         </div>
       )}
-      <div className="cms__trigger" onClick={() => setOpen(p => !p)}>
+
+      <div
+        className={`cms__trigger ${disabled ? 'cms__trigger--disabled' : ''}`}
+        onClick={() => { if (!disabled) setOpen(p => !p); }}
+      >
         <span className="cms__trigger-text">
           {disponibles.length === 0 && seleccionados.length > 0
             ? 'Todos los consultores asignados'
@@ -59,10 +74,15 @@ export const ConsultorMultiSelect = ({
         </span>
         <ChevronDown size={13} className={`cms__chevron ${open ? 'cms__chevron--open' : ''}`} />
       </div>
-      {open && disponibles.length > 0 && (
+
+      {open && !disabled && disponibles.length > 0 && (
         <div className="cms__menu">
           {disponibles.map(c => (
-            <div key={c.id} className="cms__option" onMouseDown={() => { toggle(c.id); setOpen(false); }}>
+            <div
+              key={c.id}
+              className="cms__option"
+              onMouseDown={() => { toggle(c.id); setOpen(false); }}
+            >
               <User size={11} className="cms__option-icon" />
               {c.nombre}
             </div>

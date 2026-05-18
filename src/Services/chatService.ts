@@ -34,9 +34,8 @@ export const chatService = {
     connection_to_backend
       .delete<{ ok: boolean; mensaje: string }>(`/chat/${chatId}`)
       .then(r => r.data),
-  // ✅ Correcto
-enviarConArchivos: (chatId: string, formData: FormData) =>
-  connection_to_backend
-    .post<EnviarMensajeResponse>(`/chat/${chatId}/mensaje`, formData)
-    .then(r => r.data),
+  enviarConArchivos: (chatId: string, formData: FormData) =>
+    connection_to_backend
+      .post<EnviarMensajeResponse>(`/chat/${chatId}/mensaje`, formData)
+      .then(r => r.data),
 };

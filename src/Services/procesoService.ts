@@ -1,5 +1,3 @@
-// Services/procesoService.ts
-
 import { connection_to_backend } from "../Connection/connection";
 import type {
   Proceso,
@@ -44,24 +42,40 @@ export const procesoService = {
       .delete<{ ok: boolean; mensaje: string }>(`/procesos/${id}`)
       .then(r => r.data),
 
-  // ── Etapas — método genérico (usado por el panel de detalle) ──
   upsertEtapa: (id: string, etapa: string, data: EtapaPayload) =>
     connection_to_backend
       .put(`/procesos/${id}/${etapa}`, data)
       .then(r => r.data),
 
-  // ── Etapas — métodos específicos (tipado fuerte por etapa) ────
   upsertLevantamiento: (id: string, data: Pick<EtapaPayload,
-    'consultores_ids' | 'fecha_levantamiento' | 'observaciones'>) =>
+    'consultores_ids' | 'fecha_levantamiento' | 'observaciones' | 'proximos_pasos' | 'estado_id'>) =>
     connection_to_backend.put(`/procesos/${id}/levantamiento`, data).then(r => r.data),
 
-  upsertEstimacion: (id: string, data: Pick<EtapaPayload,
-    'consultores_ids' | 'fecha_estimacion' | 'observaciones'>) =>
-    connection_to_backend.put(`/procesos/${id}/estimacion`, data).then(r => r.data),
+upsertEstimacion: (id: string, data: Pick<EtapaPayload,
+  'consultores_ids' | 'fecha_estimacion' | 'observaciones' |'proximos_pasos' |'estado_id'>) =>
+  connection_to_backend.put(`/procesos/${id}/estimacion`, data).then(r => r.data),
 
+crearInteraccionLevantamiento: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/levantamiento/interacciones`, data).then(r => r.data),
+
+
+eliminarInteraccionLevantamiento: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/levantamiento/interacciones/${interaccionId}`).then(r => r.data),
+
+crearInteraccionEstimacion: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/estimacion/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionEstimacion: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/estimacion/interacciones/${interaccionId}`).then(r => r.data),
   upsertPropuesta: (id: string, data: Pick<EtapaPayload,
     'consultores_ids' | 'nivel_detalle' | 'fecha_entrega_propuesta' |
-    'valor_presupuestado' | 'horas_presupuestadas' | 'observaciones'>) =>
+    'valor_presupuestado' | 'horas_presupuestadas' | 'observaciones'> & { horas_gerencia?: number; valor_gerencia?: number; estado_id?: string }) =>
     connection_to_backend.put(`/procesos/${id}/propuesta`, data).then(r => r.data),
 
   upsertPreliminar: (id: string, data: Pick<EtapaPayload,
@@ -70,19 +84,38 @@ export const procesoService = {
 
   upsertAprobacion: (id: string, data: Pick<EtapaPayload,
     'consultores_ids' | 'aprobado' | 'fecha_aprobacion' |
-    'motivo_rechazo' | 'fecha_rechazo' | 'observaciones'>) =>
+    'motivo_rechazo' | 'fecha_rechazo' | 'observaciones' | 'estado_id'>) =>
     connection_to_backend.put(`/procesos/${id}/aprobacion`, data).then(r => r.data),
 
-  upsertEjecucion: (id: string, data: Pick<EtapaPayload,
-    'consultores_ids' | 'consultor_responsable_id' | 'fecha_inicio' |
-    'fecha_fin' | 'horas_reales' | 'observaciones'>) =>
-    connection_to_backend.put(`/procesos/${id}/ejecucion`, data).then(r => r.data),
+upsertEjecucion: (id: string, data: Pick<EtapaPayload,
+  'consultores_ids' | 'fecha_inicio' |
+  'fecha_fin' | 'horas_reales' | 'observaciones'> & {
+  proximos_pasos?: string;  
+  estado_id?: string;        
+}) =>
+  connection_to_backend.put(`/procesos/${id}/ejecucion`, data).then(r => r.data),
 
-  // ── Interacciones ─────────────────────────────────────────────
+listarInteraccionesEjecucion: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/ejecucion/interacciones`),
+
+crearInteraccionEjecucion: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/ejecucion/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionEjecucion: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/ejecucion/interacciones/${interaccionId}`).then(r => r.data),
+
   getInteracciones: (id: string) =>
     connection_to_backend
       .get<{ ok: boolean; data: any[] }>(`/procesos/${id}/interacciones`)
       .then(r => r.data.data),
+      listarInteraccionesLevantamiento: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/levantamiento/interacciones`),
+
+listarInteraccionesEstimacion: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/estimacion/interacciones`),
 
   crearInteraccion: (id: string, data: {
     consultor_id: string; tipo?: TipoInteraccion; descripcion?: string; fecha: string;
@@ -100,7 +133,6 @@ export const procesoService = {
     const proceso = await procesoService.create(w.proyecto_id, {
       nombre_proceso:          w.nombre_proceso,
       tipo:                    w.tipo           || undefined,
-      tipo_proceso:            w.tipo_proceso   as any,
       estatus:                 w.estatus        || 'Lead',
       prioridad:               w.prioridad      || undefined,
       probabilidad_aprobacion: w.probabilidad_aprobacion || undefined,
@@ -136,6 +168,8 @@ export const procesoService = {
         fecha_entrega_propuesta: w.prop_fecha_entrega || undefined,
         valor_presupuestado:     w.prop_valor ? +w.prop_valor : undefined,
         horas_presupuestadas:    w.prop_horas ? +w.prop_horas : undefined,
+        horas_gerencia:          undefined,
+        valor_gerencia:          undefined,
         observaciones:           w.prop_observaciones || undefined,
       }));
 
@@ -159,7 +193,6 @@ export const procesoService = {
     if (w.ejec_fecha_inicio)
       calls.push(procesoService.upsertEjecucion(id, {
         consultores_ids:          w.ejec_consultores_ids.length ? w.ejec_consultores_ids : undefined,
-        consultor_responsable_id: w.ejec_consultor_responsable_id || undefined,
         fecha_inicio:             w.ejec_fecha_inicio,
         fecha_fin:                w.ejec_fecha_fin     || undefined,
         horas_reales:             w.ejec_horas_reales  ? +w.ejec_horas_reales : undefined,
@@ -179,4 +212,138 @@ export const procesoService = {
 
     return procesoService.getById(id);
   },
+  // Añadir junto a los de levantamiento/estimacion:
+  listarInteraccionesPropuesta: (procesoId: string) =>
+    connection_to_backend.get(`/procesos/${procesoId}/propuesta/interacciones`),
+
+  crearInteraccionPropuesta: (id: string, data: {
+    consultores_ids?: string[]; fecha: string;
+    observaciones?: string; proximos_pasos?: string; estado_id?: string;
+  }) =>
+    connection_to_backend.post(`/procesos/${id}/propuesta/interacciones`, data).then(r => r.data),
+
+  eliminarInteraccionPropuesta: (id: string, interaccionId: string) =>
+    connection_to_backend.delete(`/procesos/${id}/propuesta/interacciones/${interaccionId}`).then(r => r.data),
+  listarInteraccionesAprobacion: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/aprobacion/interacciones`),
+
+crearInteraccionAprobacion: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/aprobacion/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionAprobacion: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/aprobacion/interacciones/${interaccionId}`).then(r => r.data),
+upsertAprobado: (id: string, data: {
+  consultores_ids?: string[]; fecha_aprobado?: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.put(`/procesos/${id}/aprobado`, data).then(r => r.data),
+
+listarInteraccionesAprobado: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/aprobado/interacciones`),
+
+crearInteraccionAprobado: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/aprobado/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionAprobado: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/aprobado/interacciones/${interaccionId}`).then(r => r.data),
+upsertCierre: (id: string, data: {
+  consultores_ids?: string[]; fecha_cierre?: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.put(`/procesos/${id}/cierre`, data).then(r => r.data),
+
+listarInteraccionesCierre: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/cierre/interacciones`),
+
+crearInteraccionCierre: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/cierre/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionCierre: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/cierre/interacciones/${interaccionId}`).then(r => r.data),
+upsertFacturado: (id: string, data: {
+  consultores_ids?:  string[];
+  numero_factura?:   string;
+  fecha_factura?:    string;
+  valor_facturado?:  number;
+  fecha_vencimiento?: string;
+  estado_cobro?:     'Pendiente' | 'Pagado' | 'Vencido' | 'Anulado';
+  observaciones?:    string;
+  proximos_pasos?:   string;
+  estado_id?:        string;
+}) =>
+  connection_to_backend.put(`/procesos/${id}/facturado`, data).then(r => r.data),
+
+listarInteraccionesFacturado: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/facturado/interacciones`),
+
+crearInteraccionFacturado: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/facturado/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionFacturado: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/facturado/interacciones/${interaccionId}`).then(r => r.data),
+upsertRechazado: (id: string, data: {
+  consultores_ids?:   string[];
+  fecha_rechazo?:     string;
+  motivo_categoria?:  'Precio' | 'Presupuesto' | 'Competencia' | 'Tiempo' |
+                      'Alcance' | 'Decisión interna' | 'Sin respuesta' | 'Otro';
+  motivo_detalle?:    string;
+  decision_por?:      string;
+  recuperable?:       'Sí' | 'No' | 'Posiblemente';
+  fecha_recontacto?:  string;
+  observaciones?:     string;
+  proximos_pasos?:    string;
+  estado_id?:         string;
+}) =>
+  connection_to_backend.put(`/procesos/${id}/rechazado`, data).then(r => r.data),
+
+listarInteraccionesRechazado: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/rechazado/interacciones`),
+
+crearInteraccionRechazado: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/rechazado/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionRechazado: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/rechazado/interacciones/${interaccionId}`).then(r => r.data),
+upsertStandBy: (id: string, data: {
+  consultores_ids?:          string[];
+  fecha_inicio_pausa?:       string;
+  fecha_estimada_retorno?:   string;
+  motivo_categoria?:         'Presupuesto congelado' | 'Decisión pendiente' |
+                             'Cambio interno cliente' | 'Espera técnica' |
+                             'Prioridad baja' | 'Retraso externo' | 'Otro';
+  motivo_detalle?:           string;
+  decision_por?:             string;
+  condicion_reactivar?:      string;
+  observaciones?:            string;
+  proximos_pasos?:           string;
+  estado_id?:                string;
+}) =>
+  connection_to_backend.put(`/procesos/${id}/stand-by`, data).then(r => r.data),
+
+listarInteraccionesStandBy: (procesoId: string) =>
+  connection_to_backend.get(`/procesos/${procesoId}/stand-by/interacciones`),
+
+crearInteraccionStandBy: (id: string, data: {
+  consultores_ids?: string[]; fecha: string;
+  observaciones?: string; proximos_pasos?: string; estado_id?: string;
+}) =>
+  connection_to_backend.post(`/procesos/${id}/stand-by/interacciones`, data).then(r => r.data),
+
+eliminarInteraccionStandBy: (id: string, interaccionId: string) =>
+  connection_to_backend.delete(`/procesos/${id}/stand-by/interacciones/${interaccionId}`).then(r => r.data),
 };
