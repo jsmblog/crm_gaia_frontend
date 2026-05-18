@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Plus, Pencil, X, Check, UserX } from 'lucide-react';
 import { consultorService } from '../../Services/consultorService';
 import { useToast } from '../../Hooks/useToast';
 import './Consultores.css';
 import type { Consultor, ConsultorPayload } from '../../Interfaces/i_consultor';
+import { useWizardCatalogos } from '../Procesos/WizardContext';
 
 interface ModalProps {
   initial?: Consultor | null;
@@ -46,7 +47,6 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
       onSaved();
       onClose();
     } catch (err: any) {
-      // El backend usa "mensaje", no "message"
       const msg = err?.response?.data?.mensaje ?? 'Error al guardar el consultor';
       toast.error(msg);
     } finally {
@@ -108,7 +108,6 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
             </div>
           </div>
 
-          {/* Estado solo visible al editar */}
           {initial && (
             <div className="mfield">
               <label className="mfield__label">Estado</label>
@@ -165,40 +164,27 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: ConfirmProps) => (
 
 export const Consultores = () => {
   const { toast, ToastContainer } = useToast();
-  const [consultores, setConsultores] = useState<Consultor[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { consultores: consultoresOpt, reloadConsultores } = useWizardCatalogos();
+  const consultores = consultoresOpt as Consultor[];
+
   const [query, setQuery] = useState('');
   const [filtroRol, setFiltroRol] = useState<'todos' | 'consultor' | 'admin'>('todos');
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [modal, setModal] = useState<'create' | Consultor | null>(null);
   const [toDelete, setToDelete] = useState<Consultor | null>(null);
 
-  const fetchConsultores = async () => {
-    setLoading(true);
-    try {
-      // El backend devuelve { ok, total, page, pages, data[] }
-      const res = await consultorService.getAll({ limit: 100 });
-      setConsultores(res.data);
-      setTotal(res.total);
-    } catch {
-      toast.error('Error al cargar los consultores');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const total = consultores.length;
 
-  useEffect(() => { fetchConsultores(); }, []);
-
-  // Filtrado local (búsqueda + rol + estado)
   const filtered = useMemo(() => {
     return consultores.filter(c => {
-      const matchQuery = c.nombre.toLowerCase().includes(query.toLowerCase()) ||
+      const matchQuery =
+        c.nombre.toLowerCase().includes(query.toLowerCase()) ||
         c.email.toLowerCase().includes(query.toLowerCase());
       const matchRol = filtroRol === 'todos' || c.rol === filtroRol;
-      const matchActivo = filtroActivo === 'todos'
-        || (filtroActivo === 'activo' && c.activo)
-        || (filtroActivo === 'inactivo' && !c.activo);
+      const matchActivo =
+        filtroActivo === 'todos' ||
+        (filtroActivo === 'activo' && c.activo) ||
+        (filtroActivo === 'inactivo' && !c.activo);
       return matchQuery && matchRol && matchActivo;
     });
   }, [consultores, query, filtroRol, filtroActivo]);
@@ -207,9 +193,10 @@ export const Consultores = () => {
     if (!toDelete) return;
     try {
       await consultorService.remove(toDelete.id);
-      toast.success('Consultor desactivado');   // es soft delete
+      toast.success('Consultor desactivado');
       setToDelete(null);
-      fetchConsultores();
+      // ✅ Refresca el contexto global en lugar de estado local
+      await reloadConsultores();
     } catch (err: any) {
       const msg = err?.response?.data?.mensaje ?? 'Error al desactivar el consultor';
       toast.error(msg);
@@ -235,7 +222,6 @@ export const Consultores = () => {
           <div className="table-card__toolbar">
             <span className="table-card__label">Consultores Registrados</span>
 
-            {/* Búsqueda */}
             <div className="table-search">
               <Search size={13} className="table-search__icon" />
               <input
@@ -246,7 +232,6 @@ export const Consultores = () => {
               />
             </div>
 
-            {/* Filtro rol */}
             <select
               className="table-filter"
               value={filtroRol}
@@ -257,7 +242,6 @@ export const Consultores = () => {
               <option value="admin">Admin</option>
             </select>
 
-            {/* Filtro estado */}
             <select
               className="table-filter"
               value={filtroActivo}
@@ -286,9 +270,7 @@ export const Consultores = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr><td colSpan={8} className="ctable__empty">Cargando…</td></tr>
-                ) : filtered.length === 0 ? (
+                {filtered.length === 0 ? (
                   <tr><td colSpan={8} className="ctable__empty">Sin resultados</td></tr>
                 ) : filtered.map((c, i) => (
                   <tr key={c.id} className={!c.activo ? 'ctable__row--inactive' : ''}>
@@ -331,7 +313,7 @@ export const Consultores = () => {
         <ConsultorModal
           initial={modal === 'create' ? null : modal}
           onClose={() => setModal(null)}
-          onSaved={fetchConsultores}
+          onSaved={reloadConsultores}
         />
       )}
       {toDelete && (

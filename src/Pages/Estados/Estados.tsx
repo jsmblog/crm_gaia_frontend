@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, Pencil, Trash2, X, Check, Tag, RotateCcw } from "lucide-react";
-import { estadoService, type Estado} from "../../Services/estadoService";
+import { estadoService, type Estado } from "../../Services/estadoService";
 import { useToast } from "../../Hooks/useToast";
 import "./Estados.css";
+import { useWizardCatalogos } from "../Procesos/WizardContext";
 
 interface ModalProps {
   initial?: Estado | null;
@@ -72,33 +73,24 @@ const EstadoModal = ({ initial, onClose, onSaved }: ModalProps) => {
 
 export const Estados = () => {
   const { toast, ToastContainer } = useToast();
-  const [estados, setEstados] = useState<Estado[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { estados, reloadEstados } = useWizardCatalogos();
   const [modal, setModal] = useState<"create" | Estado | null>(null);
   const [toDelete, setToDelete] = useState<Estado | null>(null);
-
-  const fetchEstados = async () => {
-    setLoading(true);
-    try {
-      setEstados(await estadoService.getAll());
-    } catch {
-      toast.error("Error al cargar estados");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchEstados(); }, []);
 
   const handleDelete = async (estado: Estado) => {
     try {
       await estadoService.remove(estado.id);
       toast.success("Estado desactivado");
       setToDelete(null);
-      fetchEstados();
+      await reloadEstados();
     } catch {
       toast.error("Error al desactivar el estado");
     }
+  };
+
+  const handleRestore = async (e: Estado) => {
+    await estadoService.update(e.id, { nombre: e.nombre });
+    await reloadEstados();
   };
 
   return (
@@ -130,9 +122,7 @@ export const Estados = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr><td colSpan={4} className="ctable__empty">Cargando…</td></tr>
-                ) : estados.length === 0 ? (
+                {estados.length === 0 ? (
                   <tr><td colSpan={4} className="ctable__empty">Sin estados registrados</td></tr>
                 ) : estados.map((e, i) => (
                   <tr key={e.id}>
@@ -157,10 +147,7 @@ export const Estados = () => {
                             <Trash2 size={13} />
                           </button>
                         ) : (
-                          <button className="action-btn action-btn--restore" onClick={async () => {
-                            await estadoService.update(e.id, { nombre: e.nombre });
-                            fetchEstados();
-                          }}>
+                          <button className="action-btn action-btn--restore" onClick={() => handleRestore(e)}>
                             <RotateCcw size={13} />
                           </button>
                         )}
@@ -178,7 +165,7 @@ export const Estados = () => {
         <EstadoModal
           initial={modal === "create" ? null : modal}
           onClose={() => setModal(null)}
-          onSaved={fetchEstados}
+          onSaved={reloadEstados}
         />
       )}
 

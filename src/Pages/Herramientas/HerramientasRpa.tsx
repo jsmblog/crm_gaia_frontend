@@ -1,17 +1,18 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Search, Plus, Pencil, Trash2, X, Check,
   Cpu, Building2,
 } from 'lucide-react';
-import { herramientaService }  from '../../Services/herramientaService';
-import { useToast }             from '../../Hooks/useToast';
+import { herramientaService } from '../../Services/herramientaService';
+import { useToast } from '../../Hooks/useToast';
 import './HerramientasRpa.css';
 import type { HerramientaRpa, HerramientaPayload } from '../../Interfaces/i_herramienta';
+import { useWizardCatalogos } from '../Procesos/WizardContext';
 
 interface ModalProps {
   initial?: HerramientaRpa | null;
-  onClose:  () => void;
-  onSaved:  () => void;
+  onClose: () => void;
+  onSaved: () => void;
 }
 
 const EMPTY: HerramientaPayload = {
@@ -22,11 +23,7 @@ const HerramientaModal = ({ initial, onClose, onSaved }: ModalProps) => {
   const { toast, ToastContainer } = useToast();
   const [form, setForm] = useState<HerramientaPayload>(
     initial
-      ? {
-          nombre:      initial.nombre,
-          fabricante:  initial.fabricante  ?? '',
-          activo:      initial.activo,
-        }
+      ? { nombre: initial.nombre, fabricante: initial.fabricante ?? '', activo: initial.activo }
       : { ...EMPTY }
   );
   const [loading, setLoading] = useState(false);
@@ -35,16 +32,10 @@ const HerramientaModal = ({ initial, onClose, onSaved }: ModalProps) => {
     setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
-    if (!form.nombre.trim())
-      return toast.warning("'Nombre' es requerido");
-
+    if (!form.nombre.trim()) return toast.warning("'Nombre' es requerido");
     setLoading(true);
     try {
-      const payload = {
-        ...form,
-        fabricante:  form.fabricante?.trim()  || undefined,
-      };
-
+      const payload = { ...form, fabricante: form.fabricante?.trim() || undefined };
       if (initial) {
         await herramientaService.update(initial.id, payload);
         toast.success('Herramienta actualizada');
@@ -156,35 +147,18 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
 
 export const HerramientasRpa = () => {
   const { toast, ToastContainer } = useToast();
-  const [herramientas, setHerramientas] = useState<HerramientaRpa[]>([]);
-  const [total, setTotal]               = useState(0);
-  const [loading, setLoading]           = useState(true);
-  const [query, setQuery]               = useState('');
+  const { herramientas, reloadHerramientas } = useWizardCatalogos();
+  const [query, setQuery] = useState('');
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'activo' | 'inactivo'>('activo');
-  const [modal, setModal]               = useState<'create' | HerramientaRpa | null>(null);
-  const [toDelete, setToDelete]         = useState<HerramientaRpa | null>(null);
-
-  const fetchHerramientas = async () => {
-    setLoading(true);
-    try {
-      const res = await herramientaService.getAll({ limit: 100 });
-      setHerramientas(res.data);
-      setTotal(res.total);
-    } catch {
-      toast.error('Error al cargar las herramientas');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchHerramientas(); }, []);
+  const [modal, setModal] = useState<'create' | HerramientaRpa | null>(null);
+  const [toDelete, setToDelete] = useState<HerramientaRpa | null>(null);
 
   const filtered = useMemo(() =>
     herramientas.filter(h => {
       const matchQ = h.nombre.toLowerCase().includes(query.toLowerCase()) ||
-                     (h.fabricante ?? '').toLowerCase().includes(query.toLowerCase());
+        (h.fabricante ?? '').toLowerCase().includes(query.toLowerCase());
       const matchA = filtroActivo === 'todos'
-        || (filtroActivo === 'activo'   &&  h.activo)
+        || (filtroActivo === 'activo' && h.activo)
         || (filtroActivo === 'inactivo' && !h.activo);
       return matchQ && matchA;
     }), [herramientas, query, filtroActivo]);
@@ -195,7 +169,7 @@ export const HerramientasRpa = () => {
       await herramientaService.remove(toDelete.id);
       toast.success('Herramienta desactivada');
       setToDelete(null);
-      fetchHerramientas();
+      await reloadHerramientas();
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error al desactivar');
     }
@@ -240,7 +214,7 @@ export const HerramientasRpa = () => {
               <option value="inactivo">Inactivas</option>
             </select>
 
-            <span className="table-card__count">{filtered.length} / {total}</span>
+            <span className="table-card__count">{filtered.length} / {herramientas.length}</span>
           </div>
 
           <div className="table-wrap">
@@ -256,36 +230,29 @@ export const HerramientasRpa = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr><td colSpan={8} className="ctable__empty">Cargando…</td></tr>
-                ) : filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="ctable__empty">Sin resultados</td></tr>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="ctable__empty">Sin resultados</td></tr>
                 ) : filtered.map((h, i) => (
                   <tr key={h.id} className={!h.activo ? 'ctable__row--inactive' : ''}>
                     <td className="ctable__num">#{i + 1}</td>
-
                     <td>
                       <div className="herra-name">
                         <span className="herra-name__icon"><Cpu size={14} /></span>
                         <span className="herra-name__label">{h.nombre}</span>
                       </div>
                     </td>
-
                     <td>
                       {h.fabricante
                         ? <div className="ctable__meta"><Building2 size={11} />{h.fabricante}</div>
                         : <span className="ctable__muted">—</span>
                       }
                     </td>
-
                     <td>
                       <span className={`badge ${h.activo ? 'badge--activo' : 'badge--inactivo'}`}>
                         {h.activo ? 'Activa' : 'Inactiva'}
                       </span>
                     </td>
-
                     <td className="ctable__muted">{fmtDate(h.createdAt)}</td>
-
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(h)}>
@@ -310,7 +277,7 @@ export const HerramientasRpa = () => {
         <HerramientaModal
           initial={modal === 'create' ? null : modal}
           onClose={() => setModal(null)}
-          onSaved={fetchHerramientas}
+          onSaved={reloadHerramientas}
         />
       )}
 

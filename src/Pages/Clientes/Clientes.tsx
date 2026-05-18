@@ -19,13 +19,12 @@ import {
   type SeguimientoCliente, type SeguimientoPayload,
   type MedioSeguimiento, type TipoSeguimiento,
   type Pais, type Ciudad, type Rubro,
-  type EstadoObj,
   ESTADOS_PERMITIDOS,
 } from '../../Interfaces/i_cliente';
 import type { Consultor } from '../../Interfaces/i_consultor';
 import { ESTADO_CFG, MEDIOS, TIPOS } from '../../Constants/i_clientes';
 import { SeguimientoItem } from './SeguimientoItem';
-import { estadoService } from '../../Services/estadoService';
+import { useWizardCatalogos } from '../Procesos/WizardContext';
 
 // ─── Helpers de estado ─────────────────────────────────────────
 const getNombreEstado = (c: Cliente): string =>
@@ -68,28 +67,29 @@ interface ClienteModalProps {
 
 const ClienteModal = ({ initial, onClose, onSaved }: ClienteModalProps) => {
   const { toast, ToastContainer } = useToast();
+  const { estados } = useWizardCatalogos(); 
+
   const [form, setForm] = useState<ClientePayload>(
     initial ? {
-      empresa:               initial.empresa,
-      pais_id:               initial.pais_id,
-      ciudad_id:             initial.ciudad_id,
-      direccion:             initial.direccion,
-      rubro_id:              initial.rubro_id,
-      estado:                initial.estado,
-      estado_id:             initial.estado_id,
-      referido_por:          initial.referido_por,
+      empresa:                initial.empresa,
+      pais_id:                initial.pais_id,
+      ciudad_id:              initial.ciudad_id,
+      direccion:              initial.direccion,
+      rubro_id:               initial.rubro_id,
+      estado:                 initial.estado,
+      estado_id:              initial.estado_id,
+      referido_por:           initial.referido_por,
       precio_hora_desarrollo: initial.precio_hora_desarrollo,
-      precio_hora_soporte:   initial.precio_hora_soporte,
-      precio_hora_cambio:    initial.precio_hora_cambio,
-      porcentaje_gobierno:   initial.porcentaje_gobierno,
-      nota:                  initial.nota,
+      precio_hora_soporte:    initial.precio_hora_soporte,
+      precio_hora_cambio:     initial.precio_hora_cambio,
+      porcentaje_gobierno:    initial.porcentaje_gobierno,
+      nota:                   initial.nota,
     } : { ...EMPTY_CLIENTE }
   );
   const [paises,   setPaises]   = useState<Pais[]>([]);
   const [ciudades, setCiudades] = useState<Ciudad[]>([]);
   const [rubros,   setRubros]   = useState<Rubro[]>([]);
   const [loading,  setLoading]  = useState(false);
-  const [estados,  setEstados]  = useState<EstadoObj[]>([]);
 
   const set = <K extends keyof ClientePayload>(k: K, v: ClientePayload[K]) =>
     setForm(p => ({ ...p, [k]: v }));
@@ -98,9 +98,8 @@ const ClienteModal = ({ initial, onClose, onSaved }: ClienteModalProps) => {
     Promise.all([
       clienteService.getPaises(),
       clienteService.getRubros(),
-      estadoService.getAll(),
-    ]).then(([p, r, e]) => {
-      setPaises(p); setRubros(r); setEstados(e);
+    ]).then(([p, r]) => {
+      setPaises(p); setRubros(r);
     }).catch(() => toast.error('Error al cargar catálogos'));
   }, []);
 
@@ -263,9 +262,6 @@ const ClienteModal = ({ initial, onClose, onSaved }: ClienteModalProps) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════════
-// Modal — Seguimiento
-// ══════════════════════════════════════════════════════════════
 interface SeguimientoModalProps {
   clienteId:   string;
   usuarios:    UsuarioCliente[];
@@ -309,8 +305,8 @@ const SeguimientoModal = ({
     setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
-    if (!form.consultor_id)       return toast.warning("'Consultor' es requerido");
-    if (!form.fecha)              return toast.warning("'Fecha' es requerida");
+    if (!form.consultor_id)        return toast.warning("'Consultor' es requerido");
+    if (!form.fecha)               return toast.warning("'Fecha' es requerida");
     if (!form.descripcion?.trim()) return toast.warning("'Descripción' es requerida");
     setLoading(true);
     try {
@@ -543,6 +539,7 @@ const UsuarioModal = ({ clienteId, initial, onClose, onSaved }: UsuarioModalProp
   );
 };
 
+// ─── ConfirmDelete ─────────────────────────────────────────────
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   nombre: string; onConfirm: () => void; onCancel: () => void;
 }) => (
@@ -568,6 +565,7 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
   </div>
 );
 
+// ─── CompartirModal ────────────────────────────────────────────
 const CompartirModal = ({ usuario, cliente, consultores, onClose }: {
   usuario: UsuarioCliente; cliente: Cliente; consultores: Consultor[]; onClose: () => void;
 }) => {
@@ -582,9 +580,9 @@ const CompartirModal = ({ usuario, cliente, consultores, onClose }: {
     const lineas = [
       `📋 *Contacto — ${cliente.empresa}*`, ``,
       `👤 *Nombre:* ${usuario.nombre}`,
-      ...(usuario.cargo    ? [`💼 *Cargo:* ${usuario.cargo}`]      : []),
-      ...(usuario.email    ? [`✉️ *Email:* ${usuario.email}`]       : []),
-      ...(usuario.telefono ? [`📞 *Tel:* ${usuario.telefono}`]      : []),
+      ...(usuario.cargo    ? [`💼 *Cargo:* ${usuario.cargo}`]  : []),
+      ...(usuario.email    ? [`✉️ *Email:* ${usuario.email}`]  : []),
+      ...(usuario.telefono ? [`📞 *Tel:* ${usuario.telefono}`] : []),
       ``, `_Compartido desde CRM GAIA_`,
     ];
     const msg = encodeURIComponent(lineas.join('\n'));
@@ -673,7 +671,6 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
   const [modalSeg,     setModalSeg]     = useState<'create' | SeguimientoCliente | null>(null);
   const [toDelSeg,     setToDelSeg]     = useState<SeguimientoCliente | null>(null);
 
-  // Refs para closures del agentBus
   const usuariosRef = useRef<UsuarioCliente[]>([]);
   useEffect(() => { usuariosRef.current = usuarios; }, [usuarios]);
 
@@ -751,7 +748,7 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
     ];
 
     return () => unreg.forEach(fn => fn());
-  }, [cliente.id]); 
+  }, [cliente.id]);
 
   const fetchUsuarios = async () => {
     try { setUsuarios(await clienteService.getUsuarios(cliente.id)); }
@@ -896,9 +893,9 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
                           {!u.activo && <span className="ulist__badge--inactive">Inactivo</span>}
                         </span>
                         {u.cargo    && <span className="ulist__meta"><Briefcase size={11} /> {u.cargo}</span>}
-                        {u.email    && <span className="ulist__meta"><Mail  size={11} /> {u.email}</span>}
-                        {u.telefono && <span className="ulist__meta"><Phone size={11} /> {u.telefono}</span>}
-                        {u.linkedin && <span className="ulist__meta"><Linkedin size={11} /> {u.linkedin}</span>}
+                        {u.email    && <span className="ulist__meta"><Mail      size={11} /> {u.email}</span>}
+                        {u.telefono && <span className="ulist__meta"><Phone     size={11} /> {u.telefono}</span>}
+                        {u.linkedin && <span className="ulist__meta"><Linkedin  size={11} /> {u.linkedin}</span>}
                       </div>
                       <div className="ulist__actions">
                         <button className="action-btn action-btn--share"
@@ -998,36 +995,38 @@ const ClientePanel = ({ cliente, onClose, onClienteRefresh }: {
 
 export const Clientes = () => {
   const { toast, ToastContainer } = useToast();
-  const [clientes,  setClientes]  = useState<Cliente[]>([]);
-  const [loading,   setLoading]   = useState(true);
-  const [query,     setQuery]     = useState('');
-  const [modal,     setModal]     = useState<'create' | Cliente | null>(null);
-  const [toDelete,  setToDelete]  = useState<Cliente | null>(null);
-  const [panel,     setPanel]     = useState<Cliente | null>(null);
+  const { clientes, reloadClientes } = useWizardCatalogos(); 
+  const [loading,  setLoading]  = useState(true);
+  const [query,    setQuery]    = useState('');
+  const [modal,    setModal]    = useState<'create' | Cliente | null>(null);
+  const [toDelete, setToDelete] = useState<Cliente | null>(null);
+  const [panel,    setPanel]    = useState<Cliente | null>(null);
 
-  // ── Refs para closures del agentBus ─────────────────────────
   const clientesRef = useRef<Cliente[]>([]);
   const panelRef    = useRef<Cliente | null>(null);
 
   useEffect(() => { clientesRef.current = clientes; }, [clientes]);
   useEffect(() => { panelRef.current    = panel;    }, [panel]);
 
-  // ── Fetch principal ─────────────────────────────────────────
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      try   { await reloadClientes(); }
+      catch { toast.error('Error al cargar los clientes'); }
+      finally { setLoading(false); }
+    };
+    init();
+  }, []);
+
   const fetchClientes = async () => {
     setLoading(true);
-    try {
-      const res = await clienteService.getAll();
-      setClientes(res.data);
-      clientesRef.current = res.data;
-    }
+    try   { await reloadClientes(); }
     catch { toast.error('Error al cargar los clientes'); }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchClientes(); }, []);
-
   const refreshAndSyncPanel = async () => {
-    await fetchClientes();
+    await reloadClientes();
     if (panelRef.current) {
       try {
         const refreshed = await clienteService.getById(panelRef.current.id);
@@ -1039,12 +1038,17 @@ export const Clientes = () => {
 
   // ── Capacidades del agente — registradas UNA VEZ con refs ───
   useEffect(() => {
+    // Garantiza datos en el ref antes de operar; delega al contexto
     const loadIfEmpty = async (): Promise<Cliente[]> => {
       if (clientesRef.current.length) return clientesRef.current;
-      const res = await clienteService.getAll();
-      setClientes(res.data);
-      clientesRef.current = res.data;
-      return res.data;
+      await reloadClientes();
+      // fallback inmediato si el re-render aún no propagó
+      if (!clientesRef.current.length) {
+        const res = await clienteService.getAll();
+        clientesRef.current = res.data;
+        return res.data;
+      }
+      return clientesRef.current;
     };
 
     const unreg = [
@@ -1090,9 +1094,7 @@ export const Clientes = () => {
 
         try {
           await clienteService.update(client.id, { estado });
-          const updated = await clienteService.getAll();
-          setClientes(updated.data);
-          clientesRef.current = updated.data;
+          await reloadClientes();
 
           if (panelRef.current?.id === client.id) {
             const refreshed = await clienteService.getById(client.id);
@@ -1117,9 +1119,7 @@ export const Clientes = () => {
 
         try {
           await clienteService.createUsuario(client.id, data);
-          const updated = await clienteService.getAll();
-          setClientes(updated.data);
-          clientesRef.current = updated.data;
+          await reloadClientes();
           addToast(`Usuario "${data.nombre}" creado en ${client.empresa}`, 'success');
           const refreshed = await clienteService.getById(client.id);
           setPanel(refreshed);
@@ -1165,9 +1165,7 @@ export const Clientes = () => {
             setPanel(null);
             panelRef.current = null;
           }
-          const updated = await clienteService.getAll();
-          setClientes(updated.data);
-          clientesRef.current = updated.data;
+          await reloadClientes();
           addToast(`"${client.empresa}" desactivado`, 'info');
         } catch {
           addToast('Error al desactivar el cliente', 'error');
@@ -1185,9 +1183,7 @@ export const Clientes = () => {
 
         try {
           await clienteService.restaurar(client.id);
-          const updated = await clienteService.getAll();
-          setClientes(updated.data);
-          clientesRef.current = updated.data;
+          await reloadClientes();
           addToast(`"${client.empresa}" reactivado`, 'success');
         } catch {
           addToast('Error al reactivar el cliente', 'error');
@@ -1196,7 +1192,7 @@ export const Clientes = () => {
     ];
 
     return () => unreg.forEach(fn => fn());
-  }, []); 
+  }, []);
 
   const filtered = useMemo(() =>
     clientes.filter(c =>
@@ -1213,7 +1209,7 @@ export const Clientes = () => {
       toast.success('Cliente desactivado');
       setToDelete(null);
       if (panel?.id === toDelete.id) setPanel(null);
-      fetchClientes();
+      await reloadClientes();
     } catch { toast.error('Error al desactivar el cliente'); }
   };
 
@@ -1221,7 +1217,7 @@ export const Clientes = () => {
     try {
       await clienteService.restaurar(cliente.id);
       toast.success('Cliente reactivado');
-      fetchClientes();
+      await reloadClientes();
     } catch { toast.error('Error al reactivar el cliente'); }
   };
 
@@ -1379,4 +1375,4 @@ export const Clientes = () => {
       )}
     </div>
   );
-};  
+};
