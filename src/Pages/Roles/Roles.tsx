@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Plus, Pencil, Trash2, X, Check, Shield } from 'lucide-react';
 import { rolService } from '../../Services/rolService';
 import { useToast }   from '../../Hooks/useToast';

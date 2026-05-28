@@ -3,7 +3,7 @@ import {
   Search, Plus, Pencil, Trash2, X, Check,
   Users, ChevronRight, UserPlus, Mail, Phone, Briefcase,
   Share2, PhoneOff, DollarSign, FileText, MapPin, Globe,
-  Building2, Tag, Activity, Calendar, Clock,
+  Building2, Activity, Calendar, Clock,
   UserCheck, RotateCcw, ChevronDown,
   Snowflake, TrendingUp, Flame, AlertCircle, ThumbsDown, Linkedin,
 } from 'lucide-react';
@@ -27,7 +27,6 @@ import { SeguimientoItem } from './SeguimientoItem';
 import { useWizardCatalogos } from '../Procesos/WizardContext';
 import { RubroSelect } from './RubroSelect';
 
-// ─── Helpers de estado ─────────────────────────────────────────
 const getNombreEstado = (c: Cliente): string =>
   c.estadoObj?.nombre ?? c.estado ?? '—';
 

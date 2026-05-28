@@ -11,7 +11,6 @@ import { useWizardCatalogos } from '../Procesos/WizardContext';
   try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; }
   catch { return []; }
 };
-// ── Vista selector ─────────────────────────────────────────────────────────
 interface VistaSelectorProps {
   selected: VistaKey[];
   onChange: (vistas: VistaKey[]) => void;
@@ -72,7 +71,6 @@ const VistaSelector = ({ selected, onChange }: VistaSelectorProps) => {
   );
 };
 
-// ── Modal ──────────────────────────────────────────────────────────────────
 interface ModalProps { initial?: Consultor | null; onClose: () => void; onSaved: () => void; }
 
 const EMPTY: ConsultorPayload = {
@@ -248,7 +246,6 @@ const ConsultorModal = ({ initial, onClose, onSaved }: ModalProps) => {
   );
 };
 
-// ── Confirm ────────────────────────────────────────────────────────────────
 interface ConfirmProps { nombre: string; onConfirm: () => void; onCancel: () => void; }
 
 const ConfirmDelete = ({ nombre, onConfirm, onCancel }: ConfirmProps) => (
@@ -274,10 +271,9 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: ConfirmProps) => (
   </div>
 );
 
-// ── Página ─────────────────────────────────────────────────────────────────
 export const Consultores = () => {
   const { toast, ToastContainer } = useToast();
-  const { consultores: consultoresOpt, reloadConsultores, roles } = useWizardCatalogos();
+  const { consultores: consultoresOpt, reloadConsultores } = useWizardCatalogos();
 
   const [query,        setQuery]        = useState('');
   const [filtroRol,    setFiltroRol]    = useState('todos');
