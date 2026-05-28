@@ -1,25 +1,31 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { clienteService } from '../../Services/clienteService';
 import { consultorService } from '../../Services/consultorService';
 import { herramientaService } from '../../Services/herramientaService';
-import { proyectoService } from '../../Services/proyectoService';
 import { estadoService, type Estado } from '../../Services/estadoService';
+import { pipelineService, type ProyectoSummary } from '../../Services/pipelineService';
 import type { Cliente } from '../../Interfaces/i_cliente';
-import type { Proyecto } from '../../Interfaces/i_proyecto';
 import type { HerramientaRpa } from '../../Interfaces/i_herramienta';
 import type { Opt } from '../../Constants/procesos';
+import type { Rol } from '../../Interfaces/i_rol';
+import { rolService } from '../../Services/rolService';
+import { proyectoService } from '../../Services/proyectoService';
+import type { Proyecto } from '../../Interfaces/i_proyecto';
 
 interface WizardCatalogos {
-  clientes:     Cliente[];
-  proyectos:    Proyecto[];
-  consultores:  Opt[];
+  clientes:    Cliente[];
+  consultores: Opt[];
   herramientas: HerramientaRpa[];
-  estados:      Estado[];
-  reloadProyectos: () => Promise<void>;
-  reloadClientes: () => Promise<void>;
+  estados:     Estado[];
+  roles:       Rol[];
+  proyectos:    Proyecto[];
+  fetchProyectosByCliente: (clienteId: string) => Promise<ProyectoSummary[]>;
+  reloadClientes:    () => Promise<void>;
   reloadConsultores: () => Promise<void>;
-  reloadEstados: () => Promise<void>;
+  reloadEstados:     () => Promise<void>;
   reloadHerramientas: () => Promise<void>;
+  reloadRoles:       () => Promise<void>;
+  reloadProyectos:   () => Promise<void>; 
 }
 
 const WizardContext = createContext<WizardCatalogos | null>(null);
@@ -32,24 +38,20 @@ export const useWizardCatalogos = (): WizardCatalogos => {
 
 export const WizardProvider = ({ children }: { children: ReactNode }) => {
   const [clientes,     setClientes]     = useState<Cliente[]>([]);
-  const [proyectos,    setProyectos]    = useState<Proyecto[]>([]);
   const [consultores,  setConsultores]  = useState<Opt[]>([]);
   const [herramientas, setHerramientas] = useState<HerramientaRpa[]>([]);
   const [estados,      setEstados]      = useState<Estado[]>([]);
-
-  const reloadProyectos = async () => {
-    const r = await proyectoService.getAll({ limit: 200 });
-    setProyectos(r.data);
-  };
+  const [roles,        setRoles]        = useState<Rol[]>([]);
+  const [proyectos,     setProyectos]     = useState<Proyecto[]>([]);
 
   const reloadClientes = async () => {
-    const r = await clienteService.getAll({ limit: 200 });
-    setClientes(r.data);
+    const { data } = await clienteService.getAll({ limit: 200 });
+    setClientes(data);
   };
 
   const reloadConsultores = async () => {
-    const r = await consultorService.getAll({ activo: true, limit: 100 });
-    setConsultores(r.data);
+    const { data } = await consultorService.getAll({ activo: true, limit: 100 });
+    setConsultores(data);
   };
 
   const reloadEstados = async () => {
@@ -58,33 +60,53 @@ export const WizardProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const reloadHerramientas = async () => {
-    const r = await herramientaService.getAll({ activo: true, limit: 100 });
-    setHerramientas(r.data);
-  }
+    const { data } = await herramientaService.getAll({ activo: true, limit: 100 });
+    setHerramientas(data);
+  };
+
+  const reloadRoles = async () => {
+    const { data } = await rolService.getAll({ limit: 100 });
+    setRoles(data);
+  };
+
+  const fetchProyectosByCliente = useCallback(
+    (clienteId: string): Promise<ProyectoSummary[]> =>
+      pipelineService.getProyectos(clienteId),
+    [],
+  );
+
+  const reloadProyectos = async () => {
+    const {data} = await proyectoService.getAll({ limit: 200 });
+    setProyectos(data);
+  };
 
   useEffect(() => {
-   Promise.all([
-     reloadClientes(),
-     reloadProyectos(),
-     reloadConsultores(),
-     reloadEstados(),
-     reloadHerramientas(),
-   ]);
+    Promise.all([
+      reloadClientes(),
+      reloadConsultores(),
+      reloadEstados(),
+      reloadHerramientas(),
+      reloadRoles(),
+      reloadProyectos(),
+    ]);
   }, []);
 
   return (
     <WizardContext.Provider value={{
       clientes,
-      proyectos,
       consultores,
       herramientas,
       estados,
-      reloadProyectos,
+      roles,
+      proyectos,
+      fetchProyectosByCliente,
       reloadClientes,
       reloadConsultores,
       reloadEstados,
       reloadHerramientas,
-      }}>
+      reloadRoles,
+      reloadProyectos,
+    }}>
       {children}
     </WizardContext.Provider>
   );

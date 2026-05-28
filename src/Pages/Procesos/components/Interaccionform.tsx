@@ -1,7 +1,5 @@
 import { Check } from 'lucide-react';
 import { ConsultorMultiSelect } from '../ConsultorMultiSelect';
-import type { Estado } from '../../../Services/estadoService';
-import type { Consultor } from '../../../Interfaces/i_consultor';
 import { EstadoSelect } from '../Estadoselect';
 
 interface FormState {
@@ -18,13 +16,11 @@ interface Props {
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
-  consultores: Consultor[];
-  estados: Estado[];
-  defaultEstado?: string;
+  defaultValue?: string;
 }
 
 export const InteraccionForm = ({
-  form, setField, onSave, onCancel, saving, consultores, estados, defaultEstado,
+  form, setField, onSave, onCancel, saving, defaultValue,
 }: Props) => (
   <div className="int-form">
     <p className="int-form__title">Nueva interacción</p>
@@ -33,7 +29,6 @@ export const InteraccionForm = ({
       label="CONSULTORES"
       selected={form.consultores}
       onChange={v => setField('consultores', v)}
-      consultores={consultores}
     />
 
     <div className="wrow">
@@ -46,17 +41,12 @@ export const InteraccionForm = ({
           onChange={e => setField('fecha', e.target.value)}
         />
       </div>
-      {(() => {
-        const EstadoComp: any = EstadoSelect;
-        return (
-          <EstadoComp
-            label="ESTADO DEL PROCESO"
-            value={form.estadoId || defaultEstado}
-            onChange={(id: string) => setField('estadoId', id)}
-            estados={estados}
-          />
-        );
-      })()}
+      <EstadoSelect
+        label="ESTADO DEL PROCESO"
+        value={form.estadoId}
+        onChange={id => setField('estadoId', id)}
+        defaultValue={defaultValue}
+      />
     </div>
 
     <div className="wfield">

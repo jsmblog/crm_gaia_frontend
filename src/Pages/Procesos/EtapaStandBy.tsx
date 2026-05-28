@@ -7,15 +7,16 @@ import { StepSaveRow, StepLockedBanner } from './components/Stepshared';
 import { useInteracciones } from '../../Hooks/Useinteracciones';
 import { standByService } from './service/procesoServiceAdapters';
 import type { Props } from '../../Interfaces/i_procesos';
-import { useWizardCatalogos } from './WizardContext';
+import { toIds } from '../../Utils/toIds';
+import { useAutoConsultores } from '../../Hooks/useAutoConsultores';
 
 export const EtapaStandBy = ({
   d, set,
   wizardProcessId, onSave, saving, saved, locked,
 }: Props) => {
-  const { consultores } = useWizardCatalogos();
   const int = useInteracciones(wizardProcessId ?? undefined, standByService);
-
+    
+  useAutoConsultores(d as any, set);
   if (locked) return <StepLockedBanner />;
 
   return (
@@ -25,9 +26,8 @@ export const EtapaStandBy = ({
 
         <ConsultorMultiSelect
           label="CONSULTORES"
-          selected={(d.standby_consultores_ids as string[]) ?? []}
+          selected={toIds(d.standby_consultores_ids)}
           onChange={ids => set('standby_consultores_ids', ids)}
-          consultores={consultores}
         />
 
         <div className="wrow">
@@ -84,6 +84,7 @@ export const EtapaStandBy = ({
           label="ESTADO DEL PROCESO"
           value={d.standby_estado_id ?? 'Stand BY'}
           onChange={id => set('standby_estado_id', id)}
+          defaultValue='Stand BY'
         />
 
         <div className="wfield">
@@ -105,8 +106,7 @@ export const EtapaStandBy = ({
         {saved && (
           <InteraccionesSection
             {...int}
-            consultores={consultores}
-            defaultEstado="Stand BY"
+            defaultValue="Stand BY"
           />
         )}
       </div>

@@ -7,6 +7,7 @@ interface Props {
   onChange: (id: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  defaultValue?: string;
 }
 
 function resolveId(value: string | undefined, estados: Estado[]): string {
@@ -21,9 +22,15 @@ export const EstadoSelect = ({
   onChange,
   placeholder = '— Sin cambio —',
   disabled = false,
+  defaultValue,
 }: Props) => {
   const { estados } = useWizardCatalogos();
-  const selectedId = resolveId(value, estados);
+
+  const resolvedDefault = defaultValue
+    ? (estados.find(e => e.nombre === defaultValue)?.id ?? '')
+    : '';
+
+  const selectedId = resolveId(value, estados) || resolvedDefault;
 
   return (
     <div className="wfield">
@@ -31,14 +38,12 @@ export const EstadoSelect = ({
       <select
         className="wfield__input"
         value={selectedId}
-        disabled={disabled}
         onChange={e => onChange(e.target.value)}
+        disabled={disabled}
       >
         <option value="">{placeholder}</option>
-        {estados.map(est => (
-          <option key={est.id} value={est.id}>
-            {est.nombre}
-          </option>
+        {estados.map(e => (
+          <option key={e.id} value={e.id}>{e.nombre}</option>
         ))}
       </select>
     </div>

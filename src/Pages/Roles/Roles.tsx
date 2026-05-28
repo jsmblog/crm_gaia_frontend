@@ -4,6 +4,7 @@ import { rolService } from '../../Services/rolService';
 import { useToast }   from '../../Hooks/useToast';
 import './Roles.css';
 import type { Rol, RolPayload } from '../../Interfaces/i_rol';
+import { useWizardCatalogos } from '../Procesos/WizardContext';
 
 const RolModal = ({ initial, onClose, onSaved }: {
   initial?: Rol | null; onClose: () => void; onSaved: () => void;
@@ -50,7 +51,7 @@ const RolModal = ({ initial, onClose, onSaved }: {
             <label className="mfield__label">Nombre <span className="mfield__req">*</span></label>
             <input
               className="mfield__input"
-              placeholder="Ej: Director de Área, Usuario Técnico, Sponsor…"
+              placeholder="Ej: Arquitecto , Consultor RPA , etc."
               value={form.nombre}
               onChange={e => set('nombre', e.target.value)}
             />
@@ -121,28 +122,15 @@ const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
 
 export const Roles = () => {
   const { toast, ToastContainer } = useToast();
-  const [roles, setRoles]           = useState<Rol[]>([]);
-  const [total, setTotal]           = useState(0);
-  const [loading, setLoading]       = useState(true);
+  const {reloadRoles,roles} = useWizardCatalogos();
+  const total = roles?.length || 0;
   const [query, setQuery]           = useState('');
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'activo' | 'inactivo'>('activo');
   const [modal, setModal]           = useState<'create' | Rol | null>(null);
   const [toDelete, setToDelete]     = useState<Rol | null>(null);
 
-  const fetchRoles = async () => {
-    setLoading(true);
-    try {
-      const res = await rolService.getAll({ limit: 100 });
-      setRoles(res.data);
-      setTotal(res.total);
-    } catch { toast.error('Error al cargar los roles'); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchRoles(); }, []);
-
   const filtered = useMemo(() =>
-    roles.filter(r => {
+    roles?.filter(r => {
       const matchQ = r.nombre.toLowerCase().includes(query.toLowerCase()) ||
                      (r.descripcion ?? '').toLowerCase().includes(query.toLowerCase());
       const matchA = filtroActivo === 'todos'
@@ -157,7 +145,7 @@ export const Roles = () => {
       await rolService.remove(toDelete.id);
       toast.success('Rol desactivado');
       setToDelete(null);
-      fetchRoles();
+      reloadRoles();
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error al desactivar');
     }
@@ -172,29 +160,11 @@ export const Roles = () => {
 
       <section className="roles-section">
         <div className="roles-section__head">
-          <h2 className="roles-section__title">Roles de Proyecto</h2>
+          <h2 className="roles-section__title">Gestión de Roles</h2>
           <button className="btn-new" onClick={() => setModal('create')}>
             <Plus size={15} /> Nuevo Rol
           </button>
         </div>
-
-        {/* Chips compactos cuando hay pocos */}
-        {!loading && filtered.length > 0 && filtered.length <= 20 && (
-          <div className="roles-chips">
-            {filtered.map(r => (
-              <div
-                key={r.id}
-                className={`role-chip ${!r.activo ? 'role-chip--inactive' : ''}`}
-                onClick={() => setModal(r)}
-                title={r.descripcion ?? 'Clic para editar'}
-              >
-                <Shield size={11} />
-                <span>{r.nombre}</span>
-                {!r.activo && <span className="role-chip__tag">Inactivo</span>}
-              </div>
-            ))}
-          </div>
-        )}
 
         <div className="table-card">
           <div className="table-card__toolbar">
@@ -236,12 +206,12 @@ export const Roles = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
+                {!roles ? (
                   <tr><td colSpan={6} className="ctable__empty">Cargando…</td></tr>
                 ) : filtered.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="ctable__empty">
-                      {roles.length === 0
+                      {roles?.length === 0
                         ? 'No hay roles. Crea el primero para poder asignar personal a los proyectos.'
                         : 'Sin resultados'}
                     </td>
@@ -293,7 +263,7 @@ export const Roles = () => {
         <RolModal
           initial={modal === 'create' ? null : modal}
           onClose={() => setModal(null)}
-          onSaved={fetchRoles}
+          onSaved={reloadRoles}
         />
       )}
 

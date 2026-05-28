@@ -1,6 +1,10 @@
+
 export interface User {
-  id: string | number;
-  email: string;
-  rol: string;
-  [key: string]: unknown;
+  id:         string;
+  nombre:     string;
+  email:      string;
+  rol:        string;
+  verificado: boolean;
+  activo:     boolean;
+  vistas:     string[];   
 }

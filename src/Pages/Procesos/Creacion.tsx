@@ -51,17 +51,11 @@ export const Creacion = ({ d, set, onSave, saving, saved, isEditing }: Props) =>
       </div>
 
       <div className="wfield">
-        <label className="wfield__label">PROYECTO <span className="wfield__req">*</span></label>
-        <select className="wfield__input" value={d.proyecto_id ?? ''} onChange={e => set('proyecto_id', e.target.value)} disabled={!selectedClienteId}>
+        <label className="wfield__label">PROYECTO / PROCESO<span className="wfield__req">*</span></label>
+        <select className="wfield__input" value={d.nombre_proceso ?? ''} onChange={e => set('nombre_proceso', e.target.value)} disabled={!selectedClienteId}>
           <option value="">{selectedClienteId ? '— Selecciona un proyecto —' : '— Primero selecciona un cliente —'}</option>
-          {proyectosFiltrados.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          {proyectosFiltrados.map(p => <option key={p.id} value={p.nombre}>{p.nombre}</option>)}
         </select>
-      </div>
-
-      <div className="wfield">
-        <label className="wfield__label">NOMBRE DEL PROCESO <span className="wfield__req">*</span></label>
-        <input className="wfield__input" placeholder="Ej: Automatización de facturación"
-          value={d.nombre_proceso ?? ''} onChange={e => set('nombre_proceso', e.target.value)} />
       </div>
 
       <div className="wrow">
@@ -85,6 +79,7 @@ export const Creacion = ({ d, set, onSave, saving, saved, isEditing }: Props) =>
         label="ESTADO DEL PROCESO"
         value={d.lev_estado_id ?? 'Levantamiento'}
         onChange={id => set('lev_estado_id', id)}
+        defaultValue='Levantamiento'
       />
 
       <div className="wfield">

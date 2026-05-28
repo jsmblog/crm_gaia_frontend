@@ -40,7 +40,7 @@ export interface SeguimientoCliente {
   id:                   string;
   cliente_id:           string;
   consultor_id:         string;
-  usuario_cliente_id:   string | null;
+  contactos_ids:   string[];
   fecha:                string;
   fecha_proxima_accion: string | null;
   medio:                MedioSeguimiento;
@@ -56,15 +56,15 @@ export interface SeguimientoCliente {
   contexto_ia?:         ContextoSeguimientoIA | null;
 }
 export interface SeguimientoPayload {
-  consultor_id:          string;
-  usuario_cliente_id?:   string | null;
-  fecha:                 string;
-  fecha_proxima_accion?: string | null;
-  medio:                 MedioSeguimiento;
-  tipo:                  TipoSeguimiento;
-  descripcion:           string;
-  resultado?:            string | null;
-  estado?:               EstadoSeguimiento;
+  consultor_id:         string;
+  contactos_ids:        string[];   
+  fecha:                string;
+  fecha_proxima_accion: string | null;
+  medio:                MedioSeguimiento;
+  tipo:                 TipoSeguimiento;
+  descripcion:          string;
+  resultado:            string | null;
+  estado:               string;
 }
 export interface EstadoObj {
   id:     string;

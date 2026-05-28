@@ -8,7 +8,6 @@ export interface ClienteSummary {
   activo:         boolean;
   proyecto_count: number;
   proceso_count:  number;
-  valor_total:    number;
 }
 
 export interface ProyectoSummary {
@@ -17,7 +16,6 @@ export interface ProyectoSummary {
   descripcion:   string | null;
   activo:        boolean;
   proceso_count: number;
-  valor_total:   number;
 }
 
 export interface ProcesoLite {
@@ -30,8 +28,13 @@ export interface ProcesoLite {
   propuesta: {
     valor_presupuestado:  number | null;
     horas_presupuestadas: number | null;
+    valor_gerencia:      number | null;
   } | null;
   herramientas: { id: string; nombre: string }[];
+  cierre : {
+    horas_reales: number | null;
+    fecha_cierre: string | null;
+  } | null;
 }
 
 export const pipelineService = {

@@ -23,6 +23,7 @@ import { CalendarioCallback }      from './Pages/Calendario/CalendarioCallback';
 import { RouterBridgeConnector }   from './Components/RouterBridgeConnector'; 
 import { GestionSoporte } from './Pages/GestionSoporte/GestionSoporte';
 import { GestionLicencias } from './Pages/GestionLicencias/GestionLicencias';
+import { Perfil } from './Pages/Perfil/Perfil';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
               <Route path="/calendario"            element={<Calendario />} />
               <Route path="/gestion/soporte"     element={<GestionSoporte />} />
               <Route path="/gestionar/licencias"     element={<GestionLicencias />} />
+              <Route path="/perfil"                element={<Perfil />} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

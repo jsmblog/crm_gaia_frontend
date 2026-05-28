@@ -6,15 +6,16 @@ import { StepSaveRow, StepLockedBanner } from './components/Stepshared';
 import { useInteracciones } from '../../Hooks/Useinteracciones';
 import { aprobadoService } from './service/procesoServiceAdapters';
 import type { Props } from '../../Interfaces/i_procesos';
-import { useWizardCatalogos } from './WizardContext';
+import { toIds } from '../../Utils/toIds';
+import { useAutoConsultores } from '../../Hooks/useAutoConsultores';
 
 export const Aprobado = ({
   d, set,
   wizardProcessId, onSave, saving, saved, locked,
 }: Props) => {
-  const { consultores } = useWizardCatalogos();
   const int = useInteracciones(wizardProcessId ?? undefined, aprobadoService);
-
+  
+  useAutoConsultores(d as any, set);
   if (locked) return <StepLockedBanner />;
 
   return (
@@ -24,46 +25,54 @@ export const Aprobado = ({
 
         <ConsultorMultiSelect
           label="CONSULTORES"
-          selected={(d.aprobado_consultores_ids as string[]) ?? []}
+          selected={toIds(d.aprobado_consultores_ids)}
           onChange={ids => set('aprobado_consultores_ids', ids)}
-          consultores={consultores}
         />
 
         <div className="wrow">
           <div className="wfield">
             <label className="wfield__label">FECHA</label>
-            <input type="date" className="wfield__input"
+            <input
+              type="date"
+              className="wfield__input"
               value={d.aprobado_fecha ?? TODAY}
-              onChange={e => set('aprobado_fecha', e.target.value)} />
+              onChange={e => set('aprobado_fecha', e.target.value)}
+            />
           </div>
           <EstadoSelect
             label="ESTADO DEL PROCESO"
-            value={d.aprobado_estado_id ?? 'Aprobado'}
+            value={d.aprobado_estado_id ?? ''}
             onChange={id => set('aprobado_estado_id', id)}
+            defaultValue="Aprobado"
           />
         </div>
 
         <div className="wfield">
           <label className="wfield__label">OBSERVACIONES</label>
-          <textarea className="wfield__input wfield__textarea" rows={3}
+          <textarea
+            className="wfield__input wfield__textarea"
+            rows={3}
             placeholder="Observaciones generales…"
             value={d.aprobado_observaciones ?? ''}
-            onChange={e => set('aprobado_observaciones', e.target.value)} />
+            onChange={e => set('aprobado_observaciones', e.target.value)}
+          />
         </div>
 
         <div className="wfield">
           <label className="wfield__label">PRÓXIMOS PASOS</label>
-          <textarea className="wfield__input wfield__textarea" rows={2}
+          <textarea
+            className="wfield__input wfield__textarea"
+            rows={2}
             placeholder="¿Qué sigue después de esta etapa?…"
             value={d.aprobado_proximos_pasos ?? ''}
-            onChange={e => set('aprobado_proximos_pasos', e.target.value)} />
+            onChange={e => set('aprobado_proximos_pasos', e.target.value)}
+          />
         </div>
 
         {saved && (
           <InteraccionesSection
             {...int}
-            consultores={consultores}
-            defaultEstado="Aprobado"
+            defaultValue="Aprobado"
           />
         )}
       </div>

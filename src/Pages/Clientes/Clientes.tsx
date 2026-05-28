@@ -25,6 +25,7 @@ import type { Consultor } from '../../Interfaces/i_consultor';
 import { ESTADO_CFG, MEDIOS, TIPOS } from '../../Constants/i_clientes';
 import { SeguimientoItem } from './SeguimientoItem';
 import { useWizardCatalogos } from '../Procesos/WizardContext';
+import { RubroSelect } from './RubroSelect';
 
 // ─── Helpers de estado ─────────────────────────────────────────
 const getNombreEstado = (c: Cliente): string =>
@@ -162,18 +163,7 @@ const ClienteModal = ({ initial, onClose, onSaved }: ClienteModalProps) => {
           </div>
 
           <div className="modal__row modal__row--2">
-            <div className="mfield">
-              <label className="mfield__label"><Tag size={10} style={{ display: 'inline', marginRight: 3 }} />Rubro / Industria</label>
-              <div className="mfield__select-wrap">
-                <select className="mfield__input mfield__select"
-                  value={form.rubro_id ?? ''}
-                  onChange={e => set('rubro_id', e.target.value ? +e.target.value : null)}>
-                  <option value="">— Sin rubro —</option>
-                  {rubros.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-                </select>
-                <ChevronDown size={13} className="mfield__select-icon" />
-              </div>
-            </div>
+            <RubroSelect rubros={rubros} value={form.rubro_id ?? null} onChange={v => set('rubro_id', v)} />
             <div className="mfield">
               <label className="mfield__label"><UserCheck size={10} style={{ display: 'inline', marginRight: 3 }} />Referido por</label>
               <input className="mfield__input" placeholder="Nombre de quien refirió"
@@ -273,7 +263,7 @@ interface SeguimientoModalProps {
 
 const EMPTY_SEG: SeguimientoPayload = {
   consultor_id:         '',
-  usuario_cliente_id:   null,
+  contactos_ids:        [],
   fecha:                new Date().toISOString().slice(0, 10),
   fecha_proxima_accion: null,
   medio:                'telefono',
@@ -288,18 +278,18 @@ const SeguimientoModal = ({
 }: SeguimientoModalProps) => {
   const { toast, ToastContainer } = useToast();
   const [form, setForm] = useState<SeguimientoPayload>(
-    initial ? {
-      consultor_id:         initial.consultor_id,
-      usuario_cliente_id:   initial.usuario_cliente_id,
-      fecha:                initial.fecha,
-      fecha_proxima_accion: initial.fecha_proxima_accion,
-      medio:                initial.medio,
-      tipo:                 initial.tipo,
-      descripcion:          initial.descripcion,
-      resultado:            initial.resultado,
-      estado:               initial.estado,
-    } : { ...EMPTY_SEG }
-  );
+  initial ? {
+    consultor_id:         initial.consultor_id,
+    contactos_ids:        initial.contactos_ids ?? [], 
+    fecha:                initial.fecha,
+    fecha_proxima_accion: initial.fecha_proxima_accion,
+    medio:                initial.medio,
+    tipo:                 initial.tipo,
+    descripcion:          initial.descripcion,
+    resultado:            initial.resultado,
+    estado:               initial.estado,
+  } : { ...EMPTY_SEG }
+);
   const [loading, setLoading] = useState(false);
   const set = <K extends keyof SeguimientoPayload>(k: K, v: SeguimientoPayload[K]) =>
     setForm(p => ({ ...p, [k]: v }));
@@ -351,22 +341,38 @@ const SeguimientoModal = ({
                 <ChevronDown size={13} className="mfield__select-icon" />
               </div>
             </div>
-            <div className="mfield">
-              <label className="mfield__label">Contacto del cliente</label>
-              <div className="mfield__select-wrap">
-                <select className="mfield__input mfield__select"
-                  value={form.usuario_cliente_id ?? ''}
-                  onChange={e => set('usuario_cliente_id', e.target.value || null)}>
-                  <option value="">— Sin contacto específico —</option>
-                  {usuarios.filter(u => u.activo).map(u =>
-                    <option key={u.id} value={u.id}>
-                      {u.nombre}{u.cargo ? ` · ${u.cargo}` : ''}
-                    </option>
-                  )}
-                </select>
-                <ChevronDown size={13} className="mfield__select-icon" />
-              </div>
-            </div>
+           <div className="mfield">
+  <label className="mfield__label">Contactos del cliente</label>
+  <div className="multi-check-list">
+    {usuarios?.filter(u => u.activo).length === 0 ? (
+      <p className="multi-check-list__empty">Sin contactos registrados</p>
+    ) : (
+      usuarios?.filter(u => u.activo).map(u => {
+        const checked = form.contactos_ids?.includes(u.id);
+        return (
+          <label key={u.id} className={`multi-check-item ${checked ? 'multi-check-item--on' : ''}`}>
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() =>
+                set('contactos_ids', checked
+                  ? form.contactos_ids.filter(id => id !== u.id)
+                  : [...form.contactos_ids, u.id]
+                )
+              }
+            />
+            <span className="multi-check-item__check" />
+            <span className="multi-check-item__avatar">{u.nombre.charAt(0).toUpperCase()}</span>
+            <span className="multi-check-item__info">
+              <span className="multi-check-item__nombre">{u.nombre}</span>
+              {u.cargo && <span className="multi-check-item__cargo">{u.cargo}</span>}
+            </span>
+          </label>
+        );
+      })
+    )}
+  </div>
+</div>
           </div>
 
           <p className="mfield__section-title" style={{ marginTop: 4 }}>INTERACCIÓN</p>
@@ -509,7 +515,7 @@ const UsuarioModal = ({ clienteId, initial, onClose, onSaved }: UsuarioModalProp
             <input className="mfield__input" placeholder="Ej: Gerente de TI"
               value={form.cargo ?? ''} onChange={e => set('cargo', e.target.value)} />
           </div>
-          <p className="mfield__section-title" style={{ marginTop: 8 }}>CONTACTO (opcional)</p>
+          <p className="mfield__section-title" style={{ marginTop: 8 }}>CONTACTO</p>
           <div className="modal__row modal__row--2">
             <div className="mfield">
               <label className="mfield__label"><Mail size={10} style={{ display: 'inline', marginRight: 3 }} />Email</label>

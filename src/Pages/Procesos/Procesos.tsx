@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { procesoService } from '../../Services/procesoService';
 import { proyectoService } from '../../Services/proyectoService';
 import { useToast } from '../../Hooks/useToast';
@@ -7,7 +7,6 @@ import './Procesos.css';
 import type { Proceso, WizardPayload } from '../../Interfaces/i_procesos';
 import type { Proyecto } from '../../Interfaces/i_proyecto';
 import { EMPTY_WIZARD, STEPS, type Setter } from '../../Constants/procesos';
-import { StepHeader } from './StepHeader';
 import { DetallePanel } from './DetallePanel';
 import { ConfirmDelete } from './components/ConfirmDelete';
 import { Creacion } from './Creacion';
@@ -31,8 +30,7 @@ import { useWizardCatalogos } from './WizardContext';
 
 export const Procesos = () => {
   const { toast, ToastContainer } = useToast();
-  const { reloadProyectos, reloadClientes } = useWizardCatalogos(); // ← nuevas funciones
-
+  const { reloadProyectos, reloadClientes } = useWizardCatalogos();
   const [view, setView] = useState<'list' | 'wizard'>('list');
   const [panel, setPanel] = useState<Proceso | null>(null);
   const [toDelete, setToDelete] = useState<Proceso | null>(null);
@@ -81,13 +79,12 @@ export const Procesos = () => {
 
   const handleSaveStep1 = async () => {
     if (!wizard.proyecto_id) return toast.warning('Selecciona un proyecto');
-    if (!wizard.nombre_proceso) return toast.warning('Nombre del proceso requerido');
     if (!wizard.tipo) return toast.warning('Selecciona la clasificación');
     if (isSaving.current) return;
     isSaving.current = true; setStepSaving(true);
     try {
       const payload = {
-        nombre_proceso: wizard.nombre_proceso,
+        nombre_proceso: wizard.nombre_proceso || '',
         tipo: wizard.tipo || undefined,
         estatus: wizard.estatus || 'Levantamiento',
         prioridad: wizard.prioridad || undefined,
@@ -132,7 +129,9 @@ export const Procesos = () => {
 
       if (calls.length === 0) { toast.info('Completa algún campo antes de guardar'); return; }
       await Promise.all(calls);
-      markSaved(2); toast.success('Levantamiento guardado'); setStep(3);
+      markSaved(2);
+      toast.success('Levantamiento guardado');
+      setStep(3);
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error');
     } finally { setStepSaving(false); }
@@ -142,23 +141,46 @@ export const Procesos = () => {
     if (!wizardProcessId) return toast.warning('Primero guarda el proceso (paso 1)');
     setStepSaving(true);
     try {
-      const calls: Promise<any>[] = [];
+      await procesoService.upsertEstimacion(wizardProcessId, {
+        consultores_ids: wizard.est_consultores_ids.length ? wizard.est_consultores_ids : undefined,
+        fecha_estimacion: wizard.est_fecha || undefined,
+        observaciones: wizard.est_observaciones || undefined,
+        proximos_pasos: wizard.est_proximos_pasos || undefined,
+        estado_id: wizard.est_estado_id || undefined,
 
-      if (wizard.est_consultores_ids.length || wizard.est_fecha || wizard.est_observaciones || wizard.est_proximos_pasos)
-        calls.push(procesoService.upsertEstimacion(wizardProcessId, {
-          consultores_ids: wizard.est_consultores_ids.length ? wizard.est_consultores_ids : undefined,
-          fecha_estimacion: wizard.est_fecha || undefined,
-          observaciones: wizard.est_observaciones || undefined,
-          proximos_pasos: wizard.est_proximos_pasos || undefined,
-          estado_id: wizard.est_estado_id || undefined,
-        }));
+        volumen_transaccional_mensual: wizard.est_volumen_transaccional_mensual ?? undefined,
+        tiempo_ejecucion_transaccion: wizard.est_tiempo_ejecucion_transaccion ?? undefined,
 
-      if (calls.length === 0) { toast.info('Completa algún campo antes de guardar'); return; }
-      await Promise.all(calls);
-      markSaved(3); toast.success('Estimación guardada'); setStep(4);
+        requiere_captcha: wizard.est_requiere_captcha ?? false,
+        volumen_captcha_mes: wizard.est_volumen_captcha_mes ?? undefined,
+        costo_mensual_captcha: wizard.est_costo_mensual_captcha ?? undefined,
+
+        requiere_ai: wizard.est_requiere_ai ?? false,
+        ai_para_que: wizard.est_ai_para_que || undefined,
+        ai_nombre: wizard.est_ai_nombre || undefined,
+        ai_metodo_pago: wizard.est_ai_metodo_pago || undefined,
+        ai_volumen_mensual_tokens: wizard.est_ai_volumen_mensual_tokens ?? undefined,
+        costo_mensual_ai: wizard.est_costo_mensual_ai ?? undefined,
+
+        requiere_ocr: wizard.est_requiere_ocr ?? false,
+        ocr_nombre: wizard.est_ocr_nombre || undefined,
+        ocr_volumen_mensual: wizard.est_ocr_volumen_mensual ?? undefined,
+        ocr_costo: wizard.est_ocr_costo ?? undefined,
+
+        requiere_idp: wizard.est_requiere_idp ?? false,
+        idp_documentos: wizard.est_idp_documentos || undefined,
+        idp_volumen_mensual: wizard.est_idp_volumen_mensual ?? undefined,
+        costo_mensual_idp: wizard.est_costo_mensual_idp ?? undefined,
+      });
+
+      markSaved(3);
+      toast.success('Estimación guardada');
+      setStep(4);
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error');
-    } finally { setStepSaving(false); }
+    } finally {
+      setStepSaving(false);
+    }
   };
 
   const handleSaveStep4 = async () => {
@@ -171,12 +193,23 @@ export const Procesos = () => {
         fecha_entrega_propuesta: wizard.prop_fecha_entrega || undefined,
         valor_presupuestado: wizard.prop_valor ? +wizard.prop_valor : undefined,
         horas_presupuestadas: wizard.prop_horas ? +wizard.prop_horas : undefined,
-        observaciones: wizard.prop_observaciones || undefined,
         horas_gerencia: wizard.prop_horas_gerencia ? +wizard.prop_horas_gerencia : undefined,
         valor_gerencia: wizard.prop_valor_gerencia ? +wizard.prop_valor_gerencia : undefined,
+        observaciones: wizard.prop_observaciones || undefined,
         estado_id: wizard.prop_estado_id || undefined,
+        hito_inicio_pct: wizard.prop_hito_inicio_pct ? +wizard.prop_hito_inicio_pct : 30,
+        hito_pruebas_pct: wizard.prop_hito_pruebas_pct ? +wizard.prop_hito_pruebas_pct : 50,
+        hito_estabilizacion_pct: wizard.prop_hito_estabilizacion_pct ? +wizard.prop_hito_estabilizacion_pct : 20,
+        lic_forma_pago: wizard.prop_lic_forma_pago || undefined,
+        ocr_forma_pago: wizard.prop_ocr_forma_pago || undefined,
+        captcha_forma_pago: wizard.prop_captcha_forma_pago || undefined,
+        soporte_forma_pago: wizard.prop_soporte_forma_pago || undefined,
+        idp_forma_pago: wizard.prop_idp_forma_pago || undefined,
+        ia_forma_pago: wizard.prop_ia_forma_pago || undefined,
       });
-      markSaved(4); toast.success('Propuesta guardada'); setStep(5);
+      markSaved(4);
+      toast.success('Propuesta guardada');
+      setStep(5);
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error');
     } finally { setStepSaving(false); }
@@ -194,11 +227,13 @@ export const Procesos = () => {
         calls.push(procesoService.upsertPreliminar(wizardProcessId, {
           fecha_preliminar: wizard.pre_fecha || undefined,
           resultado: wizard.pre_resultado || undefined,
-          viable: wizard.pre_viable ?? undefined,
+          probabilidad: wizard.pre_probabilidad ?? undefined,
         }));
 
       if (wizard.apr_aprobado === 'Aprobado' || wizard.apr_aprobado === 'Rechazado')
         calls.push(procesoService.upsertAprobacion(wizardProcessId, {
+          consultores_ids: wizard.apr_consultores_ids?.length
+            ? wizard.apr_consultores_ids : undefined,
           aprobado: wizard.apr_aprobado === 'Aprobado',
           fecha_aprobacion: wizard.apr_fecha || undefined,
           motivo_rechazo: wizard.apr_motivo_rechazo || undefined,
@@ -207,7 +242,9 @@ export const Procesos = () => {
 
       if (calls.length === 0) { toast.info('Completa algún campo antes de guardar'); return; }
       await Promise.all(calls);
-      markSaved(5); toast.success('Aprobación guardada'); setStep(6);
+      markSaved(5);
+      toast.success('Aprobación guardada');
+      setStep(6);
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error');
     } finally { setStepSaving(false); }
@@ -236,39 +273,37 @@ export const Procesos = () => {
     if (!wizardProcessId) return toast.warning('Primero guarda el Lead (paso 1)');
     setStepSaving(true);
     try {
-      const calls: Promise<any>[] = [];
+      await procesoService.upsertEjecucion(wizardProcessId, {
+        consultores_ids: wizard.ejec_consultores_ids.length ? wizard.ejec_consultores_ids : undefined,
+        fecha_inicio: wizard.ejec_fecha_inicio,
+        fecha_fin: wizard.ejec_fecha_fin || undefined,
+        observaciones: wizard.ejec_observaciones || undefined,
+        proximos_pasos: wizard.ejec_proximos_pasos || undefined,
+        estado_id: wizard?.ejec_estado_id,
+      });
 
-      if ((wizard as any).neg_consultores_ids?.length || (wizard as any).neg_fecha || (wizard as any).neg_observaciones)
-        calls.push(procesoService.upsertEjecucion(wizardProcessId, {
-          consultores_ids: wizard.ejec_consultores_ids.length ? wizard.ejec_consultores_ids : undefined,
-          fecha_inicio: wizard.ejec_fecha_inicio,
-          fecha_fin: wizard.ejec_fecha_fin || undefined,
-          horas_reales: wizard.ejec_horas_reales ? +wizard.ejec_horas_reales : undefined,
-          observaciones: wizard.ejec_observaciones || undefined,
-          proximos_pasos: wizard.ejec_proximos_pasos || undefined,
-          estado_id: wizard.ejec_estado_id || undefined,
-        }));
-
-      await Promise.all(calls);
       markSaved(7);
       setStep(8);
       toast.success(isEditing ? 'Proceso actualizado' : '¡Proceso completado!');
     } catch (err: any) {
       toast.error(err?.response?.data?.mensaje ?? 'Error');
-    } finally { setStepSaving(false); }
+    } finally {
+      setStepSaving(false);
+    }
   };
 
   const handleSaveStep8 = async () => {
     if (!wizardProcessId) return toast.warning('Primero guarda el proceso (paso 1)');
     setStepSaving(true);
     try {
-      await procesoService.upsertCierre(wizardProcessId, {
+      await procesoService.upsertCierre(wizardProcessId, ({
         consultores_ids: wizard.cierre_consultores_ids?.length ? wizard.cierre_consultores_ids : undefined,
         fecha_cierre: wizard.cierre_fecha || undefined,
         observaciones: wizard.cierre_observaciones || undefined,
         proximos_pasos: wizard.cierre_proximos_pasos || undefined,
         estado_id: wizard.cierre_estado_id || undefined,
-      });
+        horas_reales: wizard.horas_reales ? +wizard.horas_reales : undefined,
+      } as any));
       markSaved(8);
       setStep(9);
       toast.success('Cierre guardado');
@@ -282,15 +317,20 @@ export const Procesos = () => {
     setStepSaving(true);
     try {
       await procesoService.upsertFacturado(wizardProcessId, {
-        consultores_ids: wizard.facturado_consultores_ids?.length ? wizard.facturado_consultores_ids : undefined,
-        numero_factura: wizard.facturado_numero_factura || undefined,
-        fecha_factura: wizard.facturado_fecha_factura || undefined,
-        valor_facturado: wizard.facturado_valor ? +wizard.facturado_valor : undefined,
-        fecha_vencimiento: wizard.facturado_fecha_vencimiento || undefined,
-        estado_cobro: wizard.facturado_estado_cobro || undefined,
+        consultores_ids: wizard.facturado_consultores_ids.length ? wizard.facturado_consultores_ids : undefined,
         observaciones: wizard.facturado_observaciones || undefined,
         proximos_pasos: wizard.facturado_proximos_pasos || undefined,
         estado_id: wizard.facturado_estado_id || undefined,
+        facturas: wizard.facturado_items.map(f => ({
+          id: f.id,
+          nombre: f.nombre || undefined,
+          numero_factura: f.numero_factura || undefined,
+          fecha_factura: f.fecha_factura || undefined,
+          dias_credito: f.dias_credito ? +f.dias_credito : 0,
+          fecha_vencimiento: f.fecha_vencimiento || undefined,
+          valor_facturado: f.valor_facturado ? +f.valor_facturado : undefined,
+          estado_cobro: f.estado_cobro || undefined,
+        })),
       });
       markSaved(9);
       setStep(10);
@@ -441,32 +481,20 @@ export const Procesos = () => {
   };
 
   const handleNuevoProceso = (proyectoId?: string) => {
-  setIsEditing(false);
-  setWizard({
-    ...EMPTY_WIZARD,
-    proyecto_id: proyectoId || '',
-  });
-  setWizardProcessId(null);
-  setSavedSteps(new Set());
-  setStep(1);
-  setView('wizard');
-};
+    setIsEditing(false);
+    setWizard({
+      ...EMPTY_WIZARD,
+      proyecto_id: proyectoId || '',
+    });
+    setWizardProcessId(null);
+    setSavedSteps(new Set());
+    setStep(1);
+    setView('wizard');
+  };
 
   return (
     <div className="opp-page">
       <ToastContainer />
-
-      <div className="opp-tabs">
-        <button className={`opp-tab ${view === 'list' ? 'opp-tab--active' : ''}`} onClick={resetWizard}>
-          Pipeline
-        </button>
-        <button
-          className={`opp-tab opp-tab--new ${view === 'wizard' ? 'opp-tab--new-active' : ''}`}
-          onClick={() => { setIsEditing(false); setView('wizard'); }}
-        >
-          <Plus size={14} /> Nuevo Proceso
-        </button>
-      </div>
 
       {view === 'list' && (
         <PipelineView
@@ -506,7 +534,6 @@ export const Procesos = () => {
                 </button>
               </div>
             </div>
-            <StepHeader current={step} savedSteps={savedSteps} processCreated={processCreated || isEditing} />
             <div className="wizard-step-nav">
               {STEPS.map((label, i) => {
                 const idx = i + 1;

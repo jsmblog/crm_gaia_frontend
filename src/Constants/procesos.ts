@@ -6,11 +6,11 @@ import type {
 export const TODAY = new Date().toISOString().split('T')[0];
 
 export const TIPOS_CLASIFICACION: TipoClasificacion[] = ['Proyecto Nuevo', 'Solicitud de Cambio'];
-export const TIPOS_PROCESO: TipoProceso[]             = ['Automatización', 'Consultoría', 'Implementación', 'Desarrollo', 'Integración'];
-export const PRIORIDADES: PrioridadProceso[]          = ['Bajo', 'Medio', 'Alto', 'Muy Alto'];
-export const PROB_LIST                                = ['1. Alto', '2. Medio', '3. Bajo'];
-export const NIVEL_DETALLE: NivelDetalle[]            = ['CPD', 'PPT', 'CPD Resumido'];
-export const TIPOS_INTERACCION: TipoInteraccion[]     = ['Llamada', 'Email', 'Reunión', 'Demo', 'WhatsApp'];
+export const TIPOS_PROCESO: TipoProceso[] = ['Automatización', 'Consultoría', 'Implementación', 'Desarrollo', 'Integración'];
+export const PRIORIDADES: PrioridadProceso[] = ['Bajo', 'Medio', 'Alto', 'Muy Alto'];
+export const PROB_LIST = ['1. Alto', '2. Medio', '3. Bajo'];
+export const NIVEL_DETALLE: NivelDetalle[] = ['CPD', 'PPT', 'CPD Resumido'];
+export const TIPOS_INTERACCION: TipoInteraccion[] = ['Llamada', 'Email', 'Reunión', 'Demo', 'WhatsApp'];
 
 export const STEPS = [
   'Creación', 'Levantamiento', 'Estimacion', 'Propuesta',
@@ -32,45 +32,61 @@ export const EMPTY_WIZARD: WizardPayload = {
   est_consultores_ids: [], est_fecha: TODAY, est_observaciones: '',
   est_proximos_pasos: '', est_estado_id: '',
   // Métricas operativas
+
   est_volumen_transaccional_mensual: undefined,
-  est_tiempo_ejecucion_transaccion:  undefined,
+  volumen_transaccional_mensual: undefined,
+  est_tiempo_ejecucion_transaccion: undefined,
   // Captcha
-  est_requiere_captcha:    false,
+  est_requiere_captcha: false,
   est_volumen_captcha_mes: undefined,
   // IA
-  est_requiere_ai:               false,
-  est_ai_para_que:               undefined,
-  est_ai_nombre:                 undefined,
-  est_ai_metodo_pago:            undefined,
+  est_requiere_ai: false,
+  est_ai_para_que: undefined,
+  est_ai_nombre: undefined,
+  est_ai_metodo_pago: undefined,
   est_ai_volumen_mensual_tokens: undefined,
   // OCR
-  est_requiere_ocr:        false,
-  est_ocr_nombre:          undefined,
+  est_requiere_ocr: false,
+  est_ocr_nombre: undefined,
   est_ocr_volumen_mensual: undefined,
-  est_ocr_costo:           undefined,
+  est_ocr_costo: undefined,
   // IDP
-  est_requiere_idp:        false,
-  est_idp_documentos:      undefined,
+  est_requiere_idp: false,
+  est_idp_documentos: undefined,
   est_idp_volumen_mensual: undefined,
+  est_costo_mensual_captcha: undefined,
+  est_costo_mensual_ai: undefined,
+  est_costo_mensual_idp: undefined,
 
   // Step 3 — Propuesta
   prop_consultores_ids: [], prop_nivel_detalle: '', prop_fecha_entrega: '',
   prop_valor: '', prop_horas: '', prop_observaciones: '',
   prop_horas_gerencia: '', prop_valor_gerencia: '', prop_estado_id: '',
+  prop_hito_inicio_pct: 30,
+  prop_hito_pruebas_pct: 50,
+  prop_hito_estabilizacion_pct: 20,
+  prop_lic_forma_pago: '',
+  prop_ocr_forma_pago: '',
+  prop_captcha_forma_pago: '',
+  prop_soporte_forma_pago: '',
+  prop_idp_forma_pago: '',
+  prop_ia_forma_pago: '',
 
   // Step 4 — Preliminar
-  pre_fecha: '', pre_resultado: '', pre_viable: null,
+  pre_fecha: '', pre_resultado: '', pre_probabilidad: '',
 
   // Step 4 — Aprobación
   apr_aprobado: '', apr_fecha: TODAY, apr_motivo_rechazo: '', apr_estado_id: '',
+  apr_consultores_ids: [],
 
   // Step 5 — Aprobado
-  aprobado_consultores_ids: [], aprobado_fecha: '',
+  aprobado_consultores_ids: [],
+  aprobado_fecha: '',
   aprobado_observaciones: '', aprobado_proximos_pasos: '', aprobado_estado_id: '',
 
   // Step 5 — Ejecución
   ejec_consultores_ids: [],
-  ejec_fecha_inicio: '', ejec_fecha_fin: '', ejec_horas_reales: '',
+  ejec_fecha_inicio: '', ejec_fecha_fin: '',
   ejec_observaciones: '', ejec_proximos_pasos: '', ejec_estado_id: '',
 
   // Step 5 — Interacción
@@ -78,9 +94,10 @@ export const EMPTY_WIZARD: WizardPayload = {
 
   // Step 6 — Cierre
   cierre_consultores_ids: [], cierre_fecha: '', cierre_observaciones: '',
-  cierre_proximos_pasos: '', cierre_estado_id: '',
+  cierre_proximos_pasos: '', cierre_estado_id: '', horas_reales: '',
 
   // Step 6 — Facturado
+  facturado_items: [],
   facturado_consultores_ids: [], facturado_numero_factura: '',
   facturado_fecha_factura: '', facturado_valor: '',
   facturado_fecha_vencimiento: '', facturado_estado_cobro: '',

@@ -86,11 +86,6 @@ const PanelClientes = ({
                   {c.proyecto_count} proy · {c.proceso_count} proc
                 </span>
               </div>
-              {c.valor_total > 0 && (
-                <span className="pl-row__val">
-                  <DollarSign size={9} />{fmtMoney(c.valor_total)}
-                </span>
-              )}
               <ChevronRight size={12} className="pl-row__chevron" />
             </button>
           ))
@@ -178,11 +173,7 @@ const PanelProyectos = ({
                   {p.proceso_count} proceso{p.proceso_count !== 1 ? "s" : ""}
                   {!p.activo && " · inactivo"}
                 </span>
-                {p.valor_total > 0 && (
-                  <span className="pl-row__val pl-row__val--block">
-                    <DollarSign size={9} />{fmtMoney(p.valor_total)}
-                  </span>
-                )}
+                
               </div>
               <div className="pl-row__actions" onClick={(e) => e.stopPropagation()}>
                 <button className="pl-act-btn" title="Detalle" onClick={() => onDet(p)}>
@@ -227,7 +218,6 @@ const PanelProcesos = ({
 }) => {
   const [procesos, setProcesos] = useState<ProcesoLite[]>([]);
   const [loading,  setLoading]  = useState(false);
-
   useEffect(() => {
     if (!proyectoId) { setProcesos([]); return; }
     setLoading(true);
@@ -246,10 +236,14 @@ const PanelProcesos = ({
   }
 
   const totalValor = procesos.reduce(
-    (s, p) => s + (Number(p.propuesta?.valor_presupuestado) || 0), 0
+    (s, p) => s + (Number(p.propuesta?.valor_presupuestado) || 0) + (Number(p.propuesta?.valor_gerencia)), 0
   );
   const totalHoras = procesos.reduce(
     (s, p) => s + (Number(p.propuesta?.horas_presupuestadas) || 0), 0
+  );
+
+  const totalHorasReales = procesos.reduce(
+    (s, p) => s + (Number(p.cierre?.horas_reales) || 0), 0
   );
 
   return (
@@ -274,7 +268,7 @@ const PanelProcesos = ({
           )}
           {totalHoras > 0 && (
             <span className="pl-stat">
-              <Clock size={10} /> {totalHoras} h
+              <Clock size={10} /> {totalHoras < totalHorasReales ? `Antes ${totalHoras} h - Ahora ${totalHorasReales} h` : `${totalHoras} h presupuestadas`}
             </span>
           )}
         </div>
@@ -288,14 +282,15 @@ const PanelProcesos = ({
             <Target size={28} strokeWidth={1.2} />
             <p>Sin procesos</p>
             <button className="pl-empty__btn" onClick={() => onNuevo(proyectoId!)}>
-              <Plus size={12} /> Nuevo proceso
+              <Plus size={12} /> Acciones
             </button>
           </div>
         ) : (
           procesos.map((p) => {
             const slug  = estatusSlug(p.estadoObj?.nombre);
-            const valor = Number(p.propuesta?.valor_presupuestado) || 0;
+            const valor = Number(p.propuesta?.valor_presupuestado) + Number(p.propuesta?.valor_gerencia) || 0;
             const horas = Number(p.propuesta?.horas_presupuestadas) || 0;
+            const horasReales = Number(p.cierre?.horas_reales) || 0;
             return (
               <div
                 key={p.id}
@@ -332,7 +327,7 @@ const PanelProcesos = ({
                     )}
                     {horas > 0 && (
                       <span className="pl-chip">
-                        <Clock size={9} /> {horas} h
+                        <Clock size={9} /> {horasReales > horas ? `${horasReales}` : `${horas}`} h
                       </span>
                     )}
                   </div>

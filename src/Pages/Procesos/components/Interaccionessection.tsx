@@ -2,15 +2,13 @@ import { Plus } from 'lucide-react';
 import type { useInteracciones } from '../../../Hooks/Useinteracciones';
 import { InteraccionCard } from './Interaccioncard';
 import { InteraccionForm } from './Interaccionform';
-import { useWizardCatalogos } from '../WizardContext';
 
 type Hook = ReturnType<typeof useInteracciones>;
 
 interface Props extends Pick<Hook,
   'interacciones' | 'showForm' | 'setShowForm' | 'form' | 'setField' | 'saving' | 'add' | 'remove' | 'resetForm'
 > {
-  consultores: any[];
-  defaultEstado?: string;
+  defaultValue?: string;
 }
 
 export const InteraccionesSection = ({
@@ -18,10 +16,8 @@ export const InteraccionesSection = ({
   showForm, setShowForm,
   form, setField,
   saving, add, remove, resetForm,
-  consultores, defaultEstado,
-}: Props) => {
-  const { estados } = useWizardCatalogos();
-  return (
+  defaultValue,
+}: Props) => (
   <div className="wfield">
     <div className="int-section-head">
       <label className="wfield__label">INTERACCIONES ({interacciones.length})</label>
@@ -47,11 +43,8 @@ export const InteraccionesSection = ({
         onSave={add}
         onCancel={resetForm}
         saving={saving}
-        consultores={consultores}
-        estados={estados}
-        defaultEstado={defaultEstado}
+        defaultValue={defaultValue}
       />
     )}
   </div>
 );
-}

@@ -6,14 +6,16 @@ import { StepSaveRow, StepLockedBanner } from './components/Stepshared';
 import { useInteracciones } from '../../Hooks/Useinteracciones';
 import { cierreService } from './service/procesoServiceAdapters';
 import type { Props } from '../../Interfaces/i_procesos';
-import { useWizardCatalogos } from './WizardContext';
+import { toIds } from '../../Utils/toIds';
+import { useAutoConsultores } from '../../Hooks/useAutoConsultores';
 
 export const EtapaCierre = ({
   d, set,
   wizardProcessId, onSave, saving, saved, locked,
 }: Props) => {
-  const { consultores } = useWizardCatalogos();
   const int = useInteracciones(wizardProcessId ?? undefined, cierreService);
+
+  useAutoConsultores(d as any, set);
 
   if (locked) return <StepLockedBanner />;
 
@@ -24,9 +26,8 @@ export const EtapaCierre = ({
 
         <ConsultorMultiSelect
           label="CONSULTORES"
-          selected={(d.cierre_consultores_ids as string[]) ?? []}
+          selected={toIds(d.cierre_consultores_ids)}
           onChange={ids => set('cierre_consultores_ids', ids)}
-          consultores={consultores}
         />
 
         <div className="wrow">
@@ -40,7 +41,18 @@ export const EtapaCierre = ({
             label="ESTADO DEL PROCESO"
             value={d.cierre_estado_id ?? 'Cerrado'}
             onChange={id => set('cierre_estado_id', id)}
+            defaultValue='Cerrado'
           />
+        </div>
+
+        <div className="wrow">
+          <div className="wfield">
+            <label className="wfield__label">HORAS REALES</label>
+            <input type="number" className="wfield__input"
+              value={d.horas_reales ?? ''}
+              min={0}
+              onChange={e => set('horas_reales', e.target.value === '' ? '' : +e.target.value)} />
+          </div>
         </div>
 
         <div className="wfield">
@@ -62,8 +74,7 @@ export const EtapaCierre = ({
         {saved && (
           <InteraccionesSection
             {...int}
-            consultores={consultores}
-            defaultEstado="Cerrado"
+            defaultValue="Cerrado"
           />
         )}
       </div>

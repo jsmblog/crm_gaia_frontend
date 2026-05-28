@@ -7,31 +7,41 @@ import type { User } from '../Interfaces/i_user';
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const COOKIE_OPTS: Cookies.CookieAttributes = {
-  expires: 1 / 3,   // 8h
+  expires: 1 / 3,
   secure: true,
   sameSite: 'Strict',
 };
 
+const parseVistas = (v: any): string[] => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v;
+  try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; }
+  catch { return []; }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser]       = useState<User | null>(null);
-  const [token, setToken]     = useState<string | null>(null);
+  const [user, setUser]           = useState<User | null>(null);
+  const [token, setToken]         = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const savedToken = Cookies.get('auth_token');
     const savedUser  = Cookies.get('auth_user');
     if (savedToken && savedUser) {
+      const parsed    = JSON.parse(savedUser);
+      parsed.vistas   = parseVistas(parsed.vistas);
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(parsed);
     }
     setIsLoading(false);
   }, []);
 
   const login = (newToken: string, newUser: User) => {
-    Cookies.set('auth_token', newToken,                  COOKIE_OPTS);
-    Cookies.set('auth_user',  JSON.stringify(newUser),   COOKIE_OPTS);
+    const safeUser = { ...newUser, vistas: parseVistas(newUser.vistas) };
+    Cookies.set('auth_token', newToken,                    COOKIE_OPTS);
+    Cookies.set('auth_user',  JSON.stringify(safeUser),    COOKIE_OPTS);
     setToken(newToken);
-    setUser(newUser);
+    setUser(safeUser);
   };
 
   const logout = () => {

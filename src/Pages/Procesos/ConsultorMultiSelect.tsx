@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Users, User, X, ChevronDown } from 'lucide-react';
-import type { Opt } from '../../Constants/procesos';
+import { useWizardCatalogos } from './WizardContext';
 
 interface Props {
   label?: string;
   selected: string[];
   onChange: (ids: string[]) => void;
-  consultores: Opt[];
   placeholder?: string;
   disabled?: boolean;
 }
@@ -15,10 +14,10 @@ export const ConsultorMultiSelect = ({
   label,
   selected,
   onChange,
-  consultores,
   placeholder = '— Añadir consultor —',
   disabled = false,
 }: Props) => {
+  const { consultores } = useWizardCatalogos();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

@@ -5,7 +5,6 @@ import { useToast } from '../../Hooks/useToast';
 import type { Proceso } from '../../Interfaces/i_procesos';
 import { fmtFecha, fmtMoney } from '../../Constants/procesos';
 import { ConsultorMultiSelect } from './ConsultorMultiSelect';
-import { useWizardCatalogos } from './WizardContext';
 import { EstadoSelect } from './Estadoselect';
 
 const ConsultoresList = ({ consultores }: { consultores?: { id: string; nombre: string }[] }) => {
@@ -43,7 +42,6 @@ interface Props {
 }
 
 export const DetallePanel = ({ proceso, onClose, onRefresh, onEdit }: Props) => {
-  const { consultores } = useWizardCatalogos();
   const { toast, ToastContainer } = useToast();
   const [data, setData] = useState<Proceso>(proceso);
   const [editIds, setEditIds] = useState<string[]>([]);
@@ -120,7 +118,6 @@ export const DetallePanel = ({ proceso, onClose, onRefresh, onEdit }: Props) => 
                 label=""
                 selected={editIds}
                 onChange={setEditIds}
-                consultores={consultores}
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <button
@@ -243,7 +240,7 @@ export const DetallePanel = ({ proceso, onClose, onRefresh, onEdit }: Props) => 
                 <>
                   <ConsultoresList consultores={data.preliminar.consultores} />
                   <Row icon={<Calendar size={11} />} label="Fecha" value={fmtFecha(data.preliminar.fecha_preliminar)} />
-                  <Row icon={<Check size={11} />} label="Viable" value={data.preliminar.viable === null ? null : data.preliminar.viable ? 'Sí' : 'No'} />
+                 {data.preliminar.probabilidad && <Row label="Probabilidad" value={`${data.preliminar.probabilidad}`} />}
                   {data.preliminar.resultado && <p className="etapa-obs">{data.preliminar.resultado}</p>}
                 </>
               ) : <p className="etapa-empty">Sin registrar</p>}
@@ -298,7 +295,6 @@ export const DetallePanel = ({ proceso, onClose, onRefresh, onEdit }: Props) => 
                   <ConsultoresList consultores={data.ejecucion.consultores} />
                   <Row icon={<Calendar size={11} />} label="Inicio" value={fmtFecha(data.ejecucion.fecha_inicio)} />
                   <Row icon={<Calendar size={11} />} label="Cierre" value={fmtFecha(data.ejecucion.fecha_fin)} />
-                  <Row icon={<Clock size={11} />} label="Hrs reales" value={data.ejecucion.horas_reales ? `${data.ejecucion.horas_reales} h` : null} />
                   {data.ejecucion.observaciones && <p className="etapa-obs">{data.ejecucion.observaciones}</p>}
                 </>
               ) : <p className="etapa-empty">Sin registrar</p>}

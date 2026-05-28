@@ -7,19 +7,20 @@ import { StepSaveRow, StepLockedBanner } from './components/Stepshared';
 import { useInteracciones } from '../../Hooks/Useinteracciones';
 import { rechazadoService } from './service/procesoServiceAdapters';
 import type { Props } from '../../Interfaces/i_procesos';
-import { useWizardCatalogos } from './WizardContext';
+import { toIds } from '../../Utils/toIds';
+import { useAutoConsultores } from '../../Hooks/useAutoConsultores';
 
 export const EtapaRechazado = ({
   d, set,
   wizardProcessId, onSave, saving, saved, locked,
 }: Props) => {
-  const { consultores } = useWizardCatalogos();
   const int = useInteracciones(wizardProcessId ?? undefined, rechazadoService);
-
+  
+  useAutoConsultores(d as any, set);
+  if (locked) return <StepLockedBanner />;
   const esRecuperable =
     d.rechazado_recuperable === 'Sí' || d.rechazado_recuperable === 'Posiblemente';
 
-  if (locked) return <StepLockedBanner />;
 
   return (
     <div className="step-body">
@@ -28,9 +29,8 @@ export const EtapaRechazado = ({
 
         <ConsultorMultiSelect
           label="CONSULTORES"
-          selected={(d.rechazado_consultores_ids as string[]) ?? []}
+          selected={toIds(d.rechazado_consultores_ids)}
           onChange={ids => set('rechazado_consultores_ids', ids)}
-          consultores={consultores}
         />
 
         <div className="wrow">
@@ -91,6 +91,7 @@ export const EtapaRechazado = ({
           label="ESTADO DEL PROCESO"
           value={d.rechazado_estado_id ?? 'Rechazado'}
           onChange={id => set('rechazado_estado_id', id)}
+          defaultValue='Rechazado'
         />
 
         <div className="wfield">
@@ -112,8 +113,7 @@ export const EtapaRechazado = ({
         {saved && (
           <InteraccionesSection
             {...int}
-            consultores={consultores}
-            defaultEstado="Rechazado"
+            defaultValue="Rechazado"
           />
         )}
       </div>
