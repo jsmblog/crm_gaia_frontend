@@ -294,7 +294,6 @@ export interface Proceso {
 }
 
 export interface ProcesoPayload {
-  nombre_proceso: string;
   tipo?: TipoClasificacion;
   estatus?: EstatusProceso;
   prioridad?: PrioridadProceso;

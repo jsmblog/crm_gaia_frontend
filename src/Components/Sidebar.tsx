@@ -22,8 +22,6 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
-
-      {/* ── Brand / Profile trigger ── */}
       <button
         className={`sidebar__brand sidebar__brand--clickable ${collapsed ? 'sidebar__brand--collapsed' : ''}`}
         onClick={handleProfile}
@@ -32,7 +30,6 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       >
         <div className="sidebar__brand-icon">
           {typeof user?.nombre === 'string' ? user.nombre.charAt(0).toUpperCase() : 'G'}
-          {/* overlay icon visible on hover */}
           <span className="sidebar__brand-icon-overlay">
             <UserCircle size={18} />
           </span>
@@ -47,7 +44,6 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
             )}
           </div>
         )}
-        {/* subtle arrow hint */}
         {!collapsed && (
           <ChevronRight size={13} className="sidebar__brand-arrow" />
         )}

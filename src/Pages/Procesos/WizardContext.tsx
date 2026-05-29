@@ -87,7 +87,6 @@ export const WizardProvider = ({ children }: { children: ReactNode }) => {
       reloadEstados(),
       reloadHerramientas(),
       reloadRoles(),
-      reloadProyectos(),
     ]);
   }, []);
 

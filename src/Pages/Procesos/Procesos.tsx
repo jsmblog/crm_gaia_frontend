@@ -84,7 +84,6 @@ export const Procesos = () => {
     isSaving.current = true; setStepSaving(true);
     try {
       const payload = {
-        nombre_proceso: wizard.nombre_proceso || '',
         tipo: wizard.tipo || undefined,
         estatus: wizard.estatus || 'Levantamiento',
         prioridad: wizard.prioridad || undefined,
@@ -417,7 +416,6 @@ export const Procesos = () => {
       toast.success('Proyecto desactivado');
       setToDeleteProyecto(null);
       if (panelProyecto?.id === toDeleteProyecto.id) setPanelProyecto(null);
-      // Recargar proyectos y clientes después de eliminar
       await Promise.all([reloadProyectos(), reloadClientes()]);
       setPipelineRefresh(prev => prev + 1);
     } catch (err: any) {

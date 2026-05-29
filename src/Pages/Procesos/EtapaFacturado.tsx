@@ -158,7 +158,6 @@ export const EtapaFacturado = ({
           </button>
         </div>
 
-        {/* ── Total ── */}
         {items.length > 1 && (
           <div className="fact-total">
             <DollarSign size={13} />
