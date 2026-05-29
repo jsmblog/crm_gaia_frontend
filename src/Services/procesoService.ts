@@ -167,7 +167,6 @@ export const procesoService = {
   createFull: async (w: WizardPayload): Promise<Proceso> => {
     // 1. Proceso base
     const proceso = await procesoService.create(w.proyecto_id, {
-      nombre_proceso: w.nombre_proceso,
       tipo: w.tipo || undefined,
       estatus: w.estatus || 'Lead',
       prioridad: w.prioridad || undefined,
