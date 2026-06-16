@@ -7,19 +7,9 @@ import './Proyectos.css';
 import { useWizardCatalogos } from '../Procesos/WizardContext';
 import type { Proceso } from '../../Interfaces/i_procesos';
 import { procesoService } from '../../Services/procesoService';
-
-const ESTATUS_LABEL: Record<string, string> = {
-  lead: 'Lead', levantamiento: 'Levantamiento', estimacion: 'Estimación',
-  propuesta: 'Propuesta', aprobacion: 'En aprobación', aprobado: 'Aprobado',
-  ejecucion: 'En ejecución', cierre: 'Cierre', rechazado: 'Rechazado',
-  facturado: 'Facturada', standby: 'Stand-by',
-};
-
-const ETAPA_PROGRESO: Record<string, number> = {
-  lead: 5, levantamiento: 15, estimacion: 30, propuesta: 45,
-  aprobacion: 55, aprobado: 65, ejecucion: 80, cierre: 92,
-  facturado: 100, rechazado: 0, standby: 0,
-};
+import { fmtDate } from '../../Utils/fmtDate';
+import { ESTATUS_LABEL } from '../../Constants/oportunidad';
+import { ETAPA_PROGRESO } from '../../Constants/proyectos';
 
 export const Proyectos = () => {
   const { proyectos } = useWizardCatalogos();
@@ -63,15 +53,12 @@ export const Proyectos = () => {
     }
   }, [selectedId, procesosCache]);
 
-  // Cerrar con Escape
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedId(null); };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, []);
 
-  const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   const totalValor = procesos.reduce((a, p) => a + (p.propuesta?.valor_presupuestado ?? 0), 0);
   const totalHoras = procesos.reduce((a, p) => a + (p.propuesta?.horas_presupuestadas ?? 0), 0);
@@ -84,7 +71,6 @@ export const Proyectos = () => {
         </div>
 
         <div className="proj-layout">
-          {/* ── Tabla ── */}
           <div className={`table-card proj-table-card ${selectedId ? 'proj-table-card--shrunk' : ''}`}>
             <div className="table-card__toolbar">
               <span className="table-card__label">Proyectos Registrados</span>
@@ -178,7 +164,6 @@ export const Proyectos = () => {
             </div>
           </div>
 
-          {/* ── Drawer de procesos ── */}
           <div ref={drawerRef} className={`proc-drawer ${selectedId ? 'proc-drawer--open' : ''}`}>
             {selectedProject && (
               <>

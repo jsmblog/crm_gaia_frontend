@@ -7,7 +7,7 @@ import { useNavigate }   from 'react-router-dom';
 import './Auth.css';
 
 export const Auth = () => {
- const { login }                 = useAuth();
+ const { login }                  =  useAuth();
   const { toast, ToastContainer } = useToast();
   const navigate                  = useNavigate();
   const [email, setEmail]         = useState('');
@@ -22,6 +22,7 @@ export const Auth = () => {
     setLoading(true);
     try {
       const { token, user } = await loginService({ email, password });
+      console.log('user desde API:', user);
       login(token, user);
       toast.success(`Bienvenido, ${user.email}`);
       navigate('/', { replace: true });

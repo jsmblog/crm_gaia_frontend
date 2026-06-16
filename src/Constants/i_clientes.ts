@@ -1,4 +1,4 @@
-import type { EstadoCliente, MedioSeguimiento, TipoSeguimiento } from "../Interfaces/i_cliente";
+import type { Cliente, EstadoCliente, MedioSeguimiento, TipoSeguimiento } from "../Interfaces/i_cliente";
 
 export const ESTADO_CFG: Record<EstadoCliente, { label: string; cls: string }> = {
   Lead: { label: "Lead", cls: "estado--lead" },
@@ -27,3 +27,10 @@ export const TIPOS: { value: TipoSeguimiento; label: string }[] = [
   { value: 'seguimiento', label: 'Seguimiento' },
   { value: 'otro', label: 'Otro' },
 ];
+
+export const getNombreEstado = (c: Cliente): string =>
+  c.estadoObj?.nombre ?? c.estado ?? '—';
+
+export const getClsEstado = (c: Cliente): string =>
+  ESTADO_CFG[c.estadoObj?.nombre as EstadoCliente]?.cls ??
+  ESTADO_CFG[c.estado]?.cls ?? '';

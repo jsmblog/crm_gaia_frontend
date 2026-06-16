@@ -1,443 +1,15 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Plus, Pencil, X, Check, Search, Trash2,
-  RotateCcw, ChevronDown, AlertCircle, Shield,
-  Calendar, DollarSign, Monitor, Cpu, Tag,
+  Plus, Pencil, X, Search, Trash2,
+  RotateCcw, Shield, Cpu,
 } from 'lucide-react';
 import { licenciaService } from '../../Services/licenciaService';
-import { clienteService } from '../../Services/clienteService';
-import { procesoService } from '../../Services/procesoService';
-import { herramientaService } from '../../Services/herramientaService';
 import { useToast } from '../../Hooks/useToast';
 import './GestionLicencias.css';
-import type { Licencia, LicenciaPayload, EstadoLicencia } from '../../Interfaces/i_licencia';
-import type { Cliente } from '../../Interfaces/i_cliente';
-import type { Proceso } from '../../Interfaces/i_procesos';
-import type { HerramientaRpa } from '../../Interfaces/i_herramienta';
+import type { Licencia, EstadoLicencia } from '../../Interfaces/i_licencia';
+import { LicenciaModal } from './LicenciaModal';
+import { ConfirmModal } from '../../Components/ConfirmModal';
 
-interface ProcesoMultiSelectProps {
-  label?: string;
-  selected: string[];
-  onChange: (ids: string[]) => void;
-  procesos: Proceso[];
-  placeholder?: string;
-  disabled?: boolean;
-}
-
-const ProcesoMultiSelect = ({
-  label,
-  selected,
-  onChange,
-  procesos,
-  placeholder = '— Seleccionar procesos —',
-  disabled = false,
-}: ProcesoMultiSelectProps) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const toggle = (id: string) => {
-    if (disabled) return;
-    onChange(selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id]);
-  };
-
-  const disponibles = procesos.filter(p => !selected.includes(p.id));
-  const seleccionados = procesos.filter(p => selected.includes(p.id));
-
-  return (
-    <div className="gl-multiselect" ref={ref}>
-      {label && <label className="gl-field__label">{label}</label>}
-      {seleccionados.length > 0 && (
-        <div className="gl-chips">
-          {seleccionados.map(p => (
-            <span key={p.id} className={`gl-chip ${disabled ? 'gl-chip--disabled' : ''}`}>
-              <Tag size={9} />
-              {p.nombre_proceso}
-              {!disabled && (
-                <button type="button" className="gl-chip__remove" onClick={() => toggle(p.id)}>
-                  <X size={9} />
-                </button>
-              )}
-            </span>
-          ))}
-        </div>
-      )}
-      <div
-        className={`gl-multiselect__trigger ${disabled ? 'gl-multiselect__trigger--disabled' : ''}`}
-        onClick={() => { if (!disabled) setOpen(p => !p); }}
-      >
-        <span className="gl-multiselect__placeholder">{placeholder}</span>
-        <ChevronDown size={13} className={`gl-multiselect__chevron ${open ? 'open' : ''}`} />
-      </div>
-      {open && !disabled && disponibles.length > 0 && (
-        <div className="gl-multiselect__menu">
-          {disponibles.map(p => (
-            <div
-              key={p.id}
-              className="gl-multiselect__option"
-              onMouseDown={() => { toggle(p.id); setOpen(false); }}
-            >
-              <Tag size={11} />
-              {p.nombre_proceso}
-            </div>
-          ))}
-        </div>
-      )}
-      {open && !disabled && disponibles.length === 0 && (
-        <div className="gl-multiselect__menu">
-          <div className="gl-multiselect__empty">Todos los procesos asignados</div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-interface LicenciaModalProps {
-  initial?: Licencia | null;
-  onClose: () => void;
-  onSaved: () => void;
-}
-
-const EMPTY_LICENCIA: LicenciaPayload = {
-  cliente_id: '',
-  estado: 'Activada',
-  fecha_inicio: '',
-  renovacion: undefined,
-  herramienta_id: undefined,
-  valor_anual: undefined,
-  ip_maquina: '',
-  procesos_ids: [],
-  fecha_estado: '',
-  motivo_desactivacion: '',
-};
-
-const LicenciaModal = ({ initial, onClose, onSaved }: LicenciaModalProps) => {
-  const { toast, ToastContainer } = useToast();
-  const [form, setForm] = useState<LicenciaPayload>(
-    initial ? {
-      cliente_id: initial.cliente_id,
-      estado: initial.estado,
-      fecha_inicio: initial.fecha_inicio || '',
-      renovacion: initial.renovacion,
-      herramienta_id: initial.herramienta_id,
-      valor_anual: initial.valor_anual,
-      ip_maquina: initial.ip_maquina || '',
-      procesos_ids: initial.procesos?.map(p => p.id) || [],
-      fecha_estado: initial.fecha_estado || '',
-      motivo_desactivacion: initial.motivo_desactivacion || '',
-    } : { ...EMPTY_LICENCIA }
-  );
-  const [loading, setLoading] = useState(false);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [procesos, setProcesos] = useState<Proceso[]>([]);
-const [herramientas, setHerramientas] = useState<HerramientaRpa[]>([])
-  const [loadingCatalogos, setLoadingCatalogos] = useState(false);
-
-  useEffect(() => {
-    const fetchCatalogos = async () => {
-      setLoadingCatalogos(true);
-      try {
-        const [clientesRes, procesosRes, herramientasRes] = await Promise.all([
-          clienteService.getAll({ limit: 500 }),
-          procesoService.getAll({ limit: 500 }),
-          herramientaService.getAll({ limit: 500, activo: true }),
-        ]);
-        setClientes(clientesRes.data);
-        setProcesos(procesosRes.data);
-        setHerramientas(herramientasRes.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingCatalogos(false);
-      }
-    };
-    fetchCatalogos();
-  }, []);
-
-  const setField = (k: keyof LicenciaPayload, v: any) =>
-    setForm(p => ({ ...p, [k]: v }));
-
-  const handleSubmit = async () => {
-    if (!form.cliente_id) return toast.warning('Selecciona un cliente');
-    if (!form.fecha_inicio) return toast.warning('La fecha de inicio es requerida');
-    if (form.estado === 'Desactivada' && !form.motivo_desactivacion?.trim()) {
-      return toast.warning('Motivo de desactivación requerido');
-    }
-    setLoading(true);
-    try {
-      // Sanitize: convert empty strings to null/undefined for date fields
-      const payload: LicenciaPayload = {
-        ...form,
-        fecha_estado: form.fecha_estado?.trim() || undefined,
-        motivo_desactivacion: form.motivo_desactivacion?.trim() || undefined,
-        herramienta_id: form.herramienta_id || undefined,
-      };
-
-      if (initial) {
-        await licenciaService.update(initial.id, payload);
-        toast.success('Licencia actualizada correctamente');
-      } else {
-        await licenciaService.create(payload);
-        toast.success('Licencia creada correctamente');
-      }
-      onSaved();
-      onClose();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.mensaje ?? 'Error al guardar la licencia');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const isDesactivada = form.estado === 'Desactivada';
-
-  return (
-    <div className="gl-overlay" onClick={onClose}>
-      <ToastContainer />
-      <div className="gl-modal" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="gl-modal__header">
-          <div className="gl-modal__header-icon">
-            <Shield size={18} />
-          </div>
-          <div className="gl-modal__header-text">
-            <h2 className="gl-modal__title">{initial ? 'Editar Licencia' : 'Nueva Licencia'}</h2>
-            <p className="gl-modal__subtitle">Gestión de licencias RPA y software</p>
-          </div>
-          <button className="gl-modal__close" onClick={onClose}>
-            <X size={15} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="gl-modal__body">
-          {/* Row: Cliente + Estado */}
-          <div className="gl-modal__row">
-            <div className="gl-field">
-              <label className="gl-field__label">
-                Cliente <span className="gl-field__req">*</span>
-              </label>
-              <select
-                className="gl-field__input"
-                value={form.cliente_id}
-                onChange={e => setField('cliente_id', e.target.value)}
-                disabled={loadingCatalogos}
-              >
-                <option value="">— Seleccionar cliente —</option>
-                {clientes.map(c => (
-                  <option key={c.id} value={c.id}>{c.empresa}</option>
-                ))}
-              </select>
-            </div>
-            <div className="gl-field">
-              <label className="gl-field__label">Estado</label>
-              <select
-                className={`gl-field__input gl-field__input--estado ${isDesactivada ? 'gl-field__input--desactivada' : 'gl-field__input--activada'}`}
-                value={form.estado}
-                onChange={e => setField('estado', e.target.value as EstadoLicencia)}
-              >
-                <option value="Activada">✓ Activada</option>
-                <option value="Desactivada">✗ Desactivada</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Row: Fecha inicio + Renovación */}
-          <div className="gl-modal__row">
-            <div className="gl-field">
-              <label className="gl-field__label">
-                <Calendar size={11} /> Fecha Inicio <span className="gl-field__req">*</span>
-              </label>
-              <input
-                type="date"
-                className="gl-field__input"
-                value={form.fecha_inicio}
-                onChange={e => setField('fecha_inicio', e.target.value)}
-              />
-            </div>
-            <div className="gl-field">
-              <label className="gl-field__label">
-                <RotateCcw size={11} /> Renovación
-              </label>
-              <select
-                className="gl-field__input"
-                value={form.renovacion || ''}
-                onChange={e => setField('renovacion', e.target.value || undefined)}
-              >
-                <option value="">— Sin renovación —</option>
-                <option value="mensual">Mensual</option>
-                <option value="anual">Anual</option>
-                <option value="2 años">2 años</option>
-                <option value="3 años">3 años</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Row: Herramienta + Valor Anual */}
-          <div className="gl-modal__row">
-            <div className="gl-field">
-              <label className="gl-field__label">
-                <Cpu size={11} /> Herramienta RPA
-              </label>
-              <select
-                className="gl-field__input"
-                value={form.herramienta_id || ''}
-                onChange={e => setField('herramienta_id', e.target.value || undefined)}
-                disabled={loadingCatalogos}
-              >
-                <option value="">— Seleccionar herramienta —</option>
-                {herramientas.map(h => (
-                  <option key={h.id} value={h.id}>{h.nombre}</option>
-                ))}
-              </select>
-            </div>
-            <div className="gl-field">
-              <label className="gl-field__label">
-                <DollarSign size={11} /> Valor Anual (USD)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                className="gl-field__input"
-                placeholder="0.00"
-                value={form.valor_anual ?? ''}
-                onChange={e => setField('valor_anual', e.target.value ? parseFloat(e.target.value) : undefined)}
-              />
-            </div>
-          </div>
-
-          {/* Row: IP Máquina */}
-          <div className="gl-modal__row gl-modal__row--single">
-            <div className="gl-field">
-              <label className="gl-field__label">
-                <Monitor size={11} /> IP Máquina
-              </label>
-              <input
-                className="gl-field__input"
-                placeholder="Ej: 192.168.1.100"
-                value={form.ip_maquina}
-                onChange={e => setField('ip_maquina', e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Procesos Asociados */}
-          <ProcesoMultiSelect
-            label="Procesos Asociados"
-            selected={form.procesos_ids || []}
-            onChange={ids => setField('procesos_ids', ids)}
-            procesos={procesos}
-            disabled={loadingCatalogos}
-          />
-
-          {/* Desactivación fields */}
-          {isDesactivada && (
-            <div className="gl-deactivation-block">
-              <div className="gl-deactivation-block__header">
-                <AlertCircle size={13} />
-                <span>Información de desactivación</span>
-              </div>
-              <div className="gl-modal__row">
-                <div className="gl-field">
-                  <label className="gl-field__label">
-                    <Calendar size={11} /> Fecha de desactivación
-                  </label>
-                  <input
-                    type="date"
-                    className="gl-field__input"
-                    value={form.fecha_estado || ''}
-                    onChange={e => setField('fecha_estado', e.target.value || '')}
-                  />
-                </div>
-              </div>
-              <div className="gl-field">
-                <label className="gl-field__label">
-                  Motivo de desactivación <span className="gl-field__req">*</span>
-                </label>
-                <textarea
-                  className="gl-field__input gl-field__textarea"
-                  rows={3}
-                  placeholder="Ej: Migración a nueva versión, no renovación del contrato…"
-                  value={form.motivo_desactivacion}
-                  onChange={e => setField('motivo_desactivacion', e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="gl-modal__footer">
-          <button className="gl-btn gl-btn--ghost" onClick={onClose} disabled={loading}>
-            Cancelar
-          </button>
-          <button className="gl-btn gl-btn--primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? (
-              <>
-                <span className="gl-spinner" />
-                Guardando…
-              </>
-            ) : (
-              <>
-                <Check size={14} />
-                {initial ? 'Actualizar Licencia' : 'Guardar Licencia'}
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────
-// ConfirmAction dialog
-// ─────────────────────────────────────────────────────────────
-interface ConfirmActionProps {
-  title: string;
-  message: string;
-  confirmText: string;
-  variant?: 'danger' | 'warning';
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-const ConfirmAction = ({
-  title, message, confirmText, variant = 'danger', onConfirm, onCancel,
-}: ConfirmActionProps) => (
-  <div className="gl-overlay" onClick={onCancel}>
-    <div className="gl-modal gl-modal--sm" onClick={e => e.stopPropagation()}>
-      <div className="gl-modal__header">
-        <div className={`gl-modal__header-icon gl-modal__header-icon--${variant}`}>
-          <AlertCircle size={18} />
-        </div>
-        <div className="gl-modal__header-text">
-          <h2 className="gl-modal__title">{title}</h2>
-        </div>
-        <button className="gl-modal__close" onClick={onCancel}><X size={15} /></button>
-      </div>
-      <div className="gl-modal__body">
-        <p className="gl-confirm__message">{message}</p>
-      </div>
-      <div className="gl-modal__footer">
-        <button className="gl-btn gl-btn--ghost" onClick={onCancel}>Cancelar</button>
-        <button className={`gl-btn gl-btn--${variant}`} onClick={onConfirm}>{confirmText}</button>
-      </div>
-    </div>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────
-// Badge de estado
-// ─────────────────────────────────────────────────────────────
 const EstadoBadge = ({ estado }: { estado: EstadoLicencia }) => (
   <span className={`gl-badge ${estado === 'Activada' ? 'gl-badge--active' : 'gl-badge--inactive'}`}>
     <span className="gl-badge__dot" />
@@ -445,9 +17,6 @@ const EstadoBadge = ({ estado }: { estado: EstadoLicencia }) => (
   </span>
 );
 
-// ─────────────────────────────────────────────────────────────
-// Página principal
-// ─────────────────────────────────────────────────────────────
 export const GestionLicencias = () => {
   const { toast, ToastContainer } = useToast();
   const [licencias, setLicencias] = useState<Licencia[]>([]);
@@ -705,7 +274,6 @@ export const GestionLicencias = () => {
         </div>
       </div>
 
-      {/* Modal nueva/editar */}
       {modal && (
         <LicenciaModal
           initial={modal === 'create' ? null : modal}
@@ -714,25 +282,21 @@ export const GestionLicencias = () => {
         />
       )}
 
-      {/* Confirm desactivar */}
       {toDelete && (
-        <ConfirmAction
+        <ConfirmModal
           title="Desactivar Licencia"
           message={`¿Desactivar la licencia de "${toDelete.cliente?.empresa || 'este cliente'}"? El historial se conservará.`}
-          confirmText="Desactivar"
-          variant="danger"
+          confirmLabel="Desactivar"
           onConfirm={handleDesactivar}
           onCancel={() => setToDelete(null)}
         />
       )}
 
-      {/* Confirm restaurar */}
       {toRestore && (
-        <ConfirmAction
+        <ConfirmModal
           title="Reactivar Licencia"
           message={`¿Reactivar la licencia de "${toRestore.cliente?.empresa || 'este cliente'}"?`}
-          confirmText="Reactivar"
-          variant="warning"
+          confirmLabel="Reactivar"
           onConfirm={handleRestaurar}
           onCancel={() => setToRestore(null)}
         />

@@ -1,149 +1,16 @@
 import { useState, useMemo } from 'react';
 import {
-  Search, Plus, Pencil, Trash2, X, Check,
+  Search, Plus, Pencil, Trash2,
   Cpu, Building2,
 } from 'lucide-react';
 import { herramientaService } from '../../Services/herramientaService';
 import { useToast } from '../../Hooks/useToast';
 import './HerramientasRpa.css';
-import type { HerramientaRpa, HerramientaPayload } from '../../Interfaces/i_herramienta';
+import type { HerramientaRpa } from '../../Interfaces/i_herramienta';
 import { useWizardCatalogos } from '../Procesos/WizardContext';
-
-interface ModalProps {
-  initial?: HerramientaRpa | null;
-  onClose: () => void;
-  onSaved: () => void;
-}
-
-const EMPTY: HerramientaPayload = {
-  nombre: '', fabricante: ''
-};
-
-const HerramientaModal = ({ initial, onClose, onSaved }: ModalProps) => {
-  const { toast, ToastContainer } = useToast();
-  const [form, setForm] = useState<HerramientaPayload>(
-    initial
-      ? { nombre: initial.nombre, fabricante: initial.fabricante ?? '', activo: initial.activo }
-      : { ...EMPTY }
-  );
-  const [loading, setLoading] = useState(false);
-
-  const set = (k: keyof HerramientaPayload, v: string | boolean) =>
-    setForm(p => ({ ...p, [k]: v }));
-
-  const handleSubmit = async () => {
-    if (!form.nombre.trim()) return toast.warning("'Nombre' es requerido");
-    setLoading(true);
-    try {
-      const payload = { ...form, fabricante: form.fabricante?.trim() || undefined };
-      if (initial) {
-        await herramientaService.update(initial.id, payload);
-        toast.success('Herramienta actualizada');
-      } else {
-        await herramientaService.create(payload);
-        toast.success('Herramienta creada');
-      }
-      onSaved();
-      onClose();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.mensaje ?? 'Error al guardar');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <ToastContainer />
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal__head">
-          <div>
-            <h2 className="modal__title">
-              {initial ? 'Editar Herramienta' : 'Nueva Herramienta RPA'}
-            </h2>
-            <p className="modal__sub">
-              {initial ? 'Modifica los datos de la herramienta' : 'Registra una nueva herramienta de automatización'}
-            </p>
-          </div>
-          <button className="modal__close" onClick={onClose}><X size={16} /></button>
-        </div>
-
-        <div className="modal__body">
-          <div className="mfield">
-            <label className="mfield__label">Nombre <span className="mfield__req">*</span></label>
-            <input
-              className="mfield__input"
-              placeholder="Ej: UiPath, Power Automate…"
-              value={form.nombre}
-              onChange={e => set('nombre', e.target.value)}
-            />
-          </div>
-
-          <div className="modal__row">
-            <div className="mfield">
-              <label className="mfield__label">Fabricante</label>
-              <input
-                className="mfield__input"
-                placeholder="Ej: UiPath Inc."
-                value={form.fabricante ?? ''}
-                onChange={e => set('fabricante', e.target.value)}
-              />
-            </div>
-          </div>
-
-          {initial && (
-            <div className="mfield">
-              <label className="mfield__label">Estado</label>
-              <div className="toggle-wrap">
-                <button
-                  type="button"
-                  className={`toggle ${form.activo ? 'toggle--on' : ''}`}
-                  onClick={() => set('activo', !form.activo)}
-                >
-                  <span className="toggle__thumb" />
-                </button>
-                <span className="toggle__label">{form.activo ? 'Activa' : 'Inactiva'}</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="modal__foot">
-          <button className="modal__btn modal__btn--ghost" onClick={onClose}>Cancelar</button>
-          <button className="modal__btn modal__btn--primary" onClick={handleSubmit} disabled={loading}>
-            <Check size={15} />
-            {loading ? 'Guardando…' : 'Guardar'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ConfirmDelete = ({ nombre, onConfirm, onCancel }: {
-  nombre: string; onConfirm: () => void; onCancel: () => void;
-}) => (
-  <div className="modal-overlay" onClick={onCancel}>
-    <div className="modal modal--sm" onClick={e => e.stopPropagation()}>
-      <div className="modal__head">
-        <h2 className="modal__title">Desactivar herramienta</h2>
-        <button className="modal__close" onClick={onCancel}><X size={16} /></button>
-      </div>
-      <div className="modal__body">
-        <p className="confirm__text">
-          ¿Desactivar <strong>{nombre}</strong>?
-          No podrá asignarse a nuevos proyectos, pero las asignaciones existentes se conservan.
-        </p>
-      </div>
-      <div className="modal__foot">
-        <button className="modal__btn modal__btn--ghost" onClick={onCancel}>Cancelar</button>
-        <button className="modal__btn modal__btn--danger" onClick={onConfirm}>
-          <Trash2 size={14} /> Desactivar
-        </button>
-      </div>
-    </div>
-  </div>
-);
+import { HerramientaModal } from './HerramientaModal';
+import { fmtDate } from '../../Utils/fmtDate';
+import { ConfirmModal } from '../../Components/ConfirmModal';
 
 export const HerramientasRpa = () => {
   const { toast, ToastContainer } = useToast();
@@ -175,13 +42,9 @@ export const HerramientasRpa = () => {
     }
   };
 
-  const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
   return (
     <div className="herramientas-page">
       <ToastContainer />
-
       <section className="herramientas-section">
         <div className="herramientas-section__head">
           <h2 className="herramientas-section__title">Herramientas RPA</h2>
@@ -282,8 +145,10 @@ export const HerramientasRpa = () => {
       )}
 
       {toDelete && (
-        <ConfirmDelete
-          nombre={toDelete.nombre}
+        <ConfirmModal
+          title="Eliminar herramienta"
+          message={`¿Estás seguro de que quieres eliminar la herramienta "${toDelete.nombre}"?`}
+          confirmLabel="Eliminar"
           onConfirm={handleDelete}
           onCancel={() => setToDelete(null)}
         />

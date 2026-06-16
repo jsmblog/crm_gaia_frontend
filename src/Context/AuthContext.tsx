@@ -3,8 +3,13 @@ import type { ReactNode } from 'react';
 import Cookies from 'js-cookie';
 import type { AuthContextType } from '../Interfaces/i_authContext';
 import type { User } from '../Interfaces/i_user';
+import { connection_to_backend } from '../Connection/connection';
 
-const AuthContext = createContext<AuthContextType | null>(null);
+interface AuthContextExtended extends AuthContextType {
+  updateUser: (updates: Partial<User>) => void;
+}
+const AuthContext = createContext<AuthContextExtended | null>(null);
+
 
 const COOKIE_OPTS: Cookies.CookieAttributes = {
   expires: 1 / 3,
@@ -17,6 +22,14 @@ const parseVistas = (v: any): string[] => {
   if (Array.isArray(v)) return v;
   try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; }
   catch { return []; }
+};
+
+const setAuthHeader = (token: string | null) => {
+  if (token) {
+    connection_to_backend.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete connection_to_backend.defaults.headers.common['Authorization'];
+  }
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -32,16 +45,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       parsed.vistas   = parseVistas(parsed.vistas);
       setToken(savedToken);
       setUser(parsed);
+      setAuthHeader(savedToken);
     }
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
+   const login = (newToken: string, newUser: User) => {
     const safeUser = { ...newUser, vistas: parseVistas(newUser.vistas) };
-    Cookies.set('auth_token', newToken,                    COOKIE_OPTS);
-    Cookies.set('auth_user',  JSON.stringify(safeUser),    COOKIE_OPTS);
+    Cookies.set('auth_token', newToken, COOKIE_OPTS);
+    Cookies.set('auth_user', JSON.stringify(safeUser), COOKIE_OPTS);
     setToken(newToken);
     setUser(safeUser);
+    setAuthHeader(newToken);
   };
 
   const logout = () => {
@@ -49,10 +64,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.remove('auth_user');
     setToken(null);
     setUser(null);
+    setAuthHeader(null);
+  };
+
+  // Nueva función: actualiza el usuario en el estado y en la cookie
+  const updateUser = (updates: Partial<User>) => {
+    if (!user) return;
+    const updated = { ...user, ...updates };
+    // Asegurar que vistas se parsea correctamente si se actualiza
+    if (updates.vistas) {
+      updated.vistas = parseVistas(updates.vistas);
+    }
+    Cookies.set('auth_user', JSON.stringify(updated), COOKIE_OPTS);
+    setUser(updated);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

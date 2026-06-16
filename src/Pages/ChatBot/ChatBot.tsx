@@ -2,150 +2,24 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Bot, X, Plus, Send, ChevronLeft, Trash2,
     MessageSquare, Loader2, Paperclip, Info, MoreVertical, Globe,
-    Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen
+    Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import { chatService } from '../../Services/chatService';
 import { useAuth } from '../../Context/AuthContext';
 import { markdownToHtml } from '../../Utils/markdownToHtml';
-import type { Chat, Mensaje } from '../../Interfaces/i_chat';
+import type { Chat, ContextoChat, Mensaje } from '../../Interfaces/i_chat';
 import './ChatBot.css';
 import { executeActions } from '../../Components/AI/actionDispactcher';
 import { PROVIDERS } from '../../Constants/providers';
-import { ALLOWED_EXTENSIONS, IMAGE_EXTENSIONS } from '../../Constants/allowed_extension';
+import { ALLOWED_EXTENSIONS } from '../../Constants/allowed_extension';
 import { useToast } from '../../Hooks/useToast';
-type ProviderKey = keyof typeof PROVIDERS;
-
-const fmtTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' });
-
-const fmtDate = (iso: string) => {
-    const d = new Date(iso);
-    const hoy = new Date();
-    if (d.toDateString() === hoy.toDateString()) return 'Hoy';
-    const ayer = new Date(hoy); ayer.setDate(hoy.getDate() - 1);
-    if (d.toDateString() === ayer.toDateString()) return 'Ayer';
-    return d.toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit' });
-};
-
-const isImage = (name: string) => {
-    const ext = `.${name.split('.').pop()?.toLowerCase()}`;
-    return IMAGE_EXTENSIONS.includes(ext);
-};
-
-const fileIcon = (name: string) => {
-    const ext = name.split('.').pop()?.toLowerCase();
-    if (ext === 'pdf') return '📄';
-    if (ext === 'docx') return '📝';
-    if (ext === 'xlsx') return '📊';
-    if (IMAGE_EXTENSIONS.includes(`.${ext}`)) return '🖼️';
-    return '📎';
-};
-
-const EJEMPLOS = [
-    '¿Cuántos procesos están en ejecución este mes?',
-    '¿Qué proyectos tiene el cliente con más actividad?',
-    '¿Cuáles son los procesos aprobados en los últimos 30 días?',
-    '¿Cuántos consultores están activos actualmente?',
-];
-
-const TYPING_SPEED = 8;
-
-interface ContextoChat {
-    resumen: string | null;
-    mensajes_resumidos: number;
-    tokens_acumulados: number;
-}
-
-// ======================== HOOK DE RECONOCIMIENTO DE VOZ CORREGIDO ========================
-const useSpeechRecognition = () => {
-    const [transcript, setTranscript] = useState('');
-    const [listening, setListening] = useState(false);
-    const [browserSupport, setBrowserSupport] = useState(true);
-    const recognitionRef = useRef<any | null>(null);
-    const { toast } = useToast();
-
-    useEffect(() => {
-        const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (!SpeechRecognitionAPI) {
-            setBrowserSupport(false);
-            toast.error('Tu navegador no soporta reconocimiento de voz');
-            return;
-        }
-        const recognition = new SpeechRecognitionAPI();
-        // Configuración para evitar repeticiones y problemas en Brave
-        recognition.continuous = false;   // Cambiado a false para que no se solapen resultados
-        recognition.interimResults = true; // Mostrar mientras habla
-        recognition.lang = 'es-EC';
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-            console.log('🎤 Voz iniciada');
-            setListening(true);
-        };
-
-        recognition.onend = () => {
-            console.log('🔇 Voz finalizada');
-            setListening(false);
-        };
-
-        recognition.onerror = (event: any) => {
-            console.error('Error voz:', event.error);
-            setListening(false);
-            if (event.error === 'not-allowed') {
-                toast.error('Permiso de micrófono denegado. Habilita el acceso.');
-            } else if (event.error === 'no-speech') {
-                toast.warning('No se detectó voz. Intenta de nuevo.');
-            } else {
-                toast.error(`\n cambie de navegador a chrome o edge para mejor experiencia`);
-            }
-        };
-
-        recognition.onresult = (event: any) => {
-            let finalText = '';
-            let interimText = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const result = event.results[i];
-                if (result.isFinal) {
-                    finalText = result[0].transcript;
-                } else {
-                    interimText += result[0].transcript;
-                }
-            }
-            if (finalText) {
-                setTranscript(finalText + ' ');
-            } else if (interimText) {
-                setTranscript(interimText);
-            }
-        };
-
-        recognitionRef.current = recognition;
-    }, [toast]);
-
-    const startListening = useCallback(() => {
-        if (!recognitionRef.current) return;
-        setTranscript('');
-        try {
-            recognitionRef.current.start();
-        } catch (err) {
-            console.warn('Error start:', err);
-            toast.error('No se pudo iniciar el micrófono');
-        }
-    }, [toast]);
-
-    const stopListening = useCallback(() => {
-        if (!recognitionRef.current) return;
-        try {
-            recognitionRef.current.stop();
-        } catch (err) { }
-    }, []);
-
-    const resetTranscript = useCallback(() => setTranscript(''), []);
-
-    return { transcript, listening, startListening, stopListening, resetTranscript, browserSupport };
-};
+import { fmtDate } from '../../Utils/fmtDate';
+import { useSpeechRecognition } from './UseSpeechRecognition';
+import { EJEMPLOS, fileIcon, fmtTime, isImage, TYPING_SPEED } from '../../Constants/chat';
+export type ProviderKey = keyof typeof PROVIDERS;
 
 export const ChatBot = () => {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const { toast, ToastContainer } = useToast();
 
     const [open, setOpen] = useState(false);
@@ -180,14 +54,18 @@ export const ChatBot = () => {
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const typingRef = useRef<boolean>(false);
-
+    const tokensBadge = user?.tokens !== undefined ? (
+        <span className={`chatbot-tokens-badge ${user.tokens <= 10 ? 'chatbot-tokens-badge--danger' : user.tokens <= 30 ? 'chatbot-tokens-badge--warn' : ''}`}>
+            ⚡ {user.tokens}
+        </span>
+    ) : null;
     const { transcript, listening, startListening, stopListening, resetTranscript, browserSupport } = useSpeechRecognition();
 
     useEffect(() => {
         if (transcript) {
-            
+
             setInput(transcript);
-            resetTranscript(); 
+            resetTranscript();
         }
     }, [transcript, resetTranscript]);
 
@@ -383,7 +261,14 @@ export const ChatBot = () => {
             setMensajes(prev => [...prev, botMsg]);
             setTypingHtml('');
             setSugerencias(res.sugerencias ?? []);
-            if (res.contexto) setContextoData(res.contexto);
+            if (res.contexto) {
+                setContextoData(prev => ({
+                    id: (prev && prev.id) || `ctx-${Date.now()}`,
+                    chat_id: (prev && prev.chat_id) || chatActual.id,
+                    ...(prev ?? {}),
+                    ...res.contexto,
+                } as ContextoChat));
+            }
 
             if (mensajes.length === 0) {
                 setChats(prev => prev.map(c =>
@@ -391,9 +276,21 @@ export const ChatBot = () => {
                 ));
                 setActiveChat(prev => prev ? { ...prev, titulo: pregunta.slice(0, 80) } : prev);
             }
+            if (res.tokens_ia && updateUser) {
+                updateUser({
+                    tokens: res.tokens_ia.disponibles,
+                    renovacion_tokens: res.tokens_ia.renovacion ? new Date(res.tokens_ia.renovacion) : null,
+                });
+            }
         } catch (err: any) {
             setSending(false);
+            const codigo = err?.response?.data?.codigo;
             const msg = err?.response?.data?.mensaje;
+
+            if (codigo === 'SIN_TOKENS' || codigo === 'IA_DESACTIVADA') {
+                toast.error(msg);
+                return;
+            }
             toast.error(msg || 'No se pudo procesar tu solicitud. Intenta de nuevo.');
         } finally {
             inputRef.current?.focus();
@@ -662,7 +559,6 @@ export const ChatBot = () => {
                     {expanded && <div className="chatbot-overlay" onClick={() => setExpanded(false)} />}
 
                     <div className={`chatbot-panel ${expanded ? 'chatbot-panel--expanded' : ''}`}>
-                        {/* Header */}
                         <div className="chatbot-panel__head">
                             <div className="chatbot-panel__icon"><Bot size={18} /></div>
                             <div><span>GA</span><span id='chatbot-panel__resaltado'>IA</span></div>
@@ -697,7 +593,7 @@ export const ChatBot = () => {
                                     </div>
                                 )}
                             </div>
-
+                            {tokensBadge}
                             <div className="chatbot-panel__actions">
                                 {(view === 'chat' || expanded) && (
                                     <>

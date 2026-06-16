@@ -1,3 +1,5 @@
+import type { Consultor } from "./i_consultor";
+
 export interface Pais {
   id:         number;
   nombre:     string;
@@ -180,4 +182,23 @@ export interface SeguimientoResponse {
 export interface CatalogoResponse<T> {
   ok:   boolean;
   data: T[];
+}
+export interface ClienteModalProps {
+  initial?: Cliente | null;
+  onClose: () => void;
+  onSaved: () => void;
+}
+export interface SeguimientoModalProps {
+  clienteId:   string;
+  usuarios:    UsuarioCliente[];
+  consultores: Consultor[];
+  initial?:    SeguimientoCliente | null;
+  onClose:     () => void;
+  onSaved:     () => void;
+}
+export interface UsuarioModalProps {
+  clienteId: string;
+  initial?:  UsuarioCliente | null;
+  onClose:   () => void;
+  onSaved:   () => void;
 }

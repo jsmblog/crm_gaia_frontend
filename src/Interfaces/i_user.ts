@@ -7,4 +7,6 @@ export interface User {
   verificado: boolean;
   activo:     boolean;
   vistas:     string[];   
+  tokens: number;
+  renovacion_tokens: Date | null;
 }

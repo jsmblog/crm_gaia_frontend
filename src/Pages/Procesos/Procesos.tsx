@@ -8,7 +8,6 @@ import type { Proceso, WizardPayload } from '../../Interfaces/i_procesos';
 import type { Proyecto } from '../../Interfaces/i_proyecto';
 import { EMPTY_WIZARD, STEPS, type Setter } from '../../Constants/procesos';
 import { DetallePanel } from './DetallePanel';
-import { ConfirmDelete } from './components/ConfirmDelete';
 import { Creacion } from './Creacion';
 import { Levantamiento } from './Levantamiento';
 import { EtapaEstimacion } from './EtapaEstimacion';
@@ -24,9 +23,9 @@ import { PipelineView } from './PipelineView';
 import type { ProyectoSummary, ProcesoLite } from '../../Services/pipelineService';
 import { ProyectoDetallePanel } from './components/ProyectoDetallePanel';
 import { ProyectoModal } from './components/ProyectoModal';
-import { ConfirmDeactivateProyecto } from './components/ConfirmDeactivateProyecto';
 import { procesoToWizard, resolveInitialSavedSteps } from './service/procesoToWizard';
 import { useWizardCatalogos } from './WizardContext';
+import { ConfirmModal } from '../../Components/ConfirmModal';
 
 export const Procesos = () => {
   const { toast, ToastContainer } = useToast();
@@ -705,15 +704,19 @@ export const Procesos = () => {
         />
       )}
       {toDelete && (
-        <ConfirmDelete
-          nombre={toDelete.nombre_proceso}
+        <ConfirmModal
+          title="Confirmar eliminación"
+          message={`¿Confirma que desea eliminar el proceso "${toDelete.nombre_proceso}"? Esta acción no se puede deshacer.`}
+          confirmLabel="Sí, eliminar"
           onConfirm={handleDelete}
           onCancel={() => setToDelete(null)}
         />
       )}
       {toDeleteProyecto && (
-        <ConfirmDeactivateProyecto
-          nombre={toDeleteProyecto.nombre}
+        <ConfirmModal
+          title="Confirmar desactivación"
+          message={`¿Confirma que desea desactivar el proyecto "${toDeleteProyecto.nombre}"? Esta acción no se puede deshacer, y el proyecto no estará disponible para nuevos procesos.`}
+          confirmLabel="Sí, desactivar"
           onConfirm={handleDeleteProyecto}
           onCancel={() => setToDeleteProyecto(null)}
         />

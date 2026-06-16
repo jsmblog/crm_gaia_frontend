@@ -60,6 +60,13 @@ export interface EnviarMensajeResponse {
     mensajes_resumidos: number;
     tokens_acumulados: number;
   };
+  tokens_ia?: {
+    limite: number;
+    usados: number;
+    disponibles: number;
+    renovacion: string;
+  };
+  debug: any;
 }
 
 export interface CrearChatPayload {
@@ -69,4 +76,10 @@ export interface CrearChatPayload {
 
 export interface EnviarMensajePayload {
   pregunta: string;
+}
+
+export interface ContextoChat {
+    resumen: string | null;
+    mensajes_resumidos: number;
+    tokens_acumulados: number;
 }

@@ -1,9 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../Styles/Sidebar.css';
-import { useAuth }  from '../Context/AuthContext';
-import { NAV }      from '../Constants/nav';
+import { useAuth } from '../Context/AuthContext';
+import { NAV } from '../Constants/nav';
 import { LogOut, ChevronRight, UserCircle } from 'lucide-react';
 import type { SidebarProps } from '../Interfaces/i_sidebar';
+import { ThemePanel } from './Themepanel';
 
 export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const { logout, user } = useAuth();
@@ -69,19 +70,19 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                 >
                   <Icon size={18} className="sidebar__item-icon" />
                   {!collapsed && <span className="sidebar__item-label">{label}</span>}
-                  {collapsed  && <span className="sidebar__tooltip">{label}</span>}
+                  {collapsed && <span className="sidebar__tooltip">{label}</span>}
                 </NavLink>
               ))}
             </div>
           );
         })}
       </nav>
-
+      <ThemePanel collapsed={collapsed} />
       <div className="sidebar__footer">
         <button className="sidebar__item sidebar__item--logout" onClick={handleLogout}>
           <LogOut size={18} className="sidebar__item-icon" />
           {!collapsed && <span className="sidebar__item-label">Cerrar sesión</span>}
-          {collapsed  && <span className="sidebar__tooltip">Cerrar sesión</span>}
+          {collapsed && <span className="sidebar__tooltip">Cerrar sesión</span>}
         </button>
       </div>
 

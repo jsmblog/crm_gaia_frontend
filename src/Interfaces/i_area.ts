@@ -26,3 +26,8 @@ export interface AreaResponse {
   mensaje: string;
   data:    Area;
 }
+export interface ModalProps {
+  initial?: Area | null;
+  onClose:  () => void;
+  onSaved:  () => void;
+}

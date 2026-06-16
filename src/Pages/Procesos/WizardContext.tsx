@@ -11,6 +11,7 @@ import type { Rol } from '../../Interfaces/i_rol';
 import { rolService } from '../../Services/rolService';
 import { proyectoService } from '../../Services/proyectoService';
 import type { Proyecto } from '../../Interfaces/i_proyecto';
+import { useAuth } from '../../Context/AuthContext';
 
 interface WizardCatalogos {
   clientes:    Cliente[];
@@ -19,13 +20,15 @@ interface WizardCatalogos {
   estados:     Estado[];
   roles:       Rol[];
   proyectos:    Proyecto[];
+  cargando:    boolean;
   fetchProyectosByCliente: (clienteId: string) => Promise<ProyectoSummary[]>;
   reloadClientes:    () => Promise<void>;
   reloadConsultores: () => Promise<void>;
   reloadEstados:     () => Promise<void>;
   reloadHerramientas: () => Promise<void>;
   reloadRoles:       () => Promise<void>;
-  reloadProyectos:   () => Promise<void>; 
+  reloadProyectos:   () => Promise<void>;
+  reloadAll:         () => Promise<void>;
 }
 
 const WizardContext = createContext<WizardCatalogos | null>(null);
@@ -42,7 +45,11 @@ export const WizardProvider = ({ children }: { children: ReactNode }) => {
   const [herramientas, setHerramientas] = useState<HerramientaRpa[]>([]);
   const [estados,      setEstados]      = useState<Estado[]>([]);
   const [roles,        setRoles]        = useState<Rol[]>([]);
-  const [proyectos,     setProyectos]     = useState<Proyecto[]>([]);
+  const [proyectos,    setProyectos]    = useState<Proyecto[]>([]);
+  const [cargando,     setCargando]     = useState(true);
+  const [yaCargado,    setYaCargado]    = useState(false);
+
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const reloadClientes = async () => {
     const { data } = await clienteService.getAll({ limit: 200 });
@@ -69,26 +76,45 @@ export const WizardProvider = ({ children }: { children: ReactNode }) => {
     setRoles(data);
   };
 
+  const reloadProyectos = async () => {
+    const { data } = await proyectoService.getAll({ limit: 200 });
+    setProyectos(data);
+  };
+
   const fetchProyectosByCliente = useCallback(
     (clienteId: string): Promise<ProyectoSummary[]> =>
       pipelineService.getProyectos(clienteId),
     [],
   );
 
-  const reloadProyectos = async () => {
-    const {data} = await proyectoService.getAll({ limit: 200 });
-    setProyectos(data);
-  };
+  const reloadAll = useCallback(async () => {
+    setCargando(true);
+    try {
+      await Promise.all([
+        reloadClientes(),
+        reloadConsultores(),
+        reloadEstados(),
+        reloadHerramientas(),
+        reloadRoles(),
+        reloadProyectos(),
+      ]);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
   useEffect(() => {
-    Promise.all([
-      reloadClientes(),
-      reloadConsultores(),
-      reloadEstados(),
-      reloadHerramientas(),
-      reloadRoles(),
-    ]);
-  }, []);
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      setCargando(false);
+      setYaCargado(false);
+      return;
+    }
+    if (yaCargado) return;
+
+    reloadAll().then(() => setYaCargado(true));
+  }, [isAuthenticated, authLoading, yaCargado, reloadAll]);
 
   return (
     <WizardContext.Provider value={{
@@ -98,6 +124,7 @@ export const WizardProvider = ({ children }: { children: ReactNode }) => {
       estados,
       roles,
       proyectos,
+      cargando,
       fetchProyectosByCliente,
       reloadClientes,
       reloadConsultores,
@@ -105,6 +132,7 @@ export const WizardProvider = ({ children }: { children: ReactNode }) => {
       reloadHerramientas,
       reloadRoles,
       reloadProyectos,
+      reloadAll,
     }}>
       {children}
     </WizardContext.Provider>

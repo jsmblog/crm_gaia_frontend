@@ -1,10 +1,16 @@
 import { useState } from "react";
 import type { ContextoSeguimientoIA, SeguimientoCliente } from "../../Interfaces/i_cliente";
-import { AlertCircle, Brain, CheckCircle2, ChevronDown, Clock, MessageCircle, Pencil, Trash2, TrendingUp, UserCheck, Users, Video } from "lucide-react";
+import { AlertCircle, Brain, CheckCircle2, ChevronDown, Clock, Flame, MessageCircle, Pencil, Snowflake, ThumbsDown, Trash2, TrendingUp, UserCheck, Users, Video } from "lucide-react";
 import { MEDIOS, TIPOS } from "../../Constants/i_clientes";
-import { RELACION_CFG } from "./Clientes";
 
-// ── SeguimientoItem ────────────────────────────────────────────
+export const RELACION_CFG: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
+  frio:      { label: 'Frío',      cls: 'rel--frio',     icon: <Snowflake size={10} /> },
+  tibio:     { label: 'Tibio',     cls: 'rel--tibio',    icon: <TrendingUp size={10} /> },
+  caliente:  { label: 'Caliente',  cls: 'rel--caliente', icon: <Flame size={10} /> },
+  en_riesgo: { label: 'En riesgo', cls: 'rel--riesgo',   icon: <AlertCircle size={10} /> },
+  cerrado:   { label: 'Cerrado',   cls: 'rel--cerrado',  icon: <ThumbsDown size={10} /> },
+};
+
 interface SeguimientoItemProps {
   s: SeguimientoCliente;
   onEdit: (s: SeguimientoCliente) => void;

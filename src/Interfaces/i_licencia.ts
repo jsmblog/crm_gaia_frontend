@@ -46,3 +46,8 @@ export interface LicenciaResponse {
   mensaje: string;
   data: Licencia;
 }
+export interface LicenciaModalProps {
+  initial?: Licencia | null;
+  onClose: () => void;
+  onSaved: () => void;
+}

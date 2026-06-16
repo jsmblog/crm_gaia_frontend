@@ -531,3 +531,11 @@ export interface Props {
   saved: boolean;
   locked: boolean;
 }
+export interface ProcesoMultiSelectProps {
+  label?: string;
+  selected: string[];
+  onChange: (ids: string[]) => void;
+  procesos: Proceso[];
+  placeholder?: string;
+  disabled?: boolean;
+}

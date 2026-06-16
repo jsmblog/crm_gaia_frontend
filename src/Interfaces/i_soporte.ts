@@ -58,3 +58,9 @@ export interface SoporteResponse {
   mensaje: string;
   data: Soporte;
 }
+
+export interface SoporteModalProps {
+  initial?: Soporte | null;
+  onClose: () => void;
+  onSaved: () => void;
+}
