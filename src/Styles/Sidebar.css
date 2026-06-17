@@ -1,6 +1,6 @@
 .sidebar {
-  width: 230px;
-  min-width: 230px;
+  width: 260px;
+  min-width: 260px;
   background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
@@ -27,7 +27,7 @@
 
 .sidebar__nav {
   flex: 1;
-  padding: 12px 0;
+  padding: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -55,7 +55,7 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 5.5px 16px;
+  padding: 7px 16px;
   margin: 1px 8px;
   border-radius: 8px;
   color: var(--sidebar-text);

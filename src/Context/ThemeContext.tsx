@@ -24,6 +24,9 @@ export const DEFAULT_TYPOGRAPHY: Typography = {
 export const FONT_FAMILIES = [
   'DM Sans', 'Inter', 'Roboto', 'Poppins', 'Nunito',
   'IBM Plex Sans', 'Geist', 'Outfit', 'Plus Jakarta Sans', 'Sora',
+  'Montserrat', 'Open Sans', 'Lato', 'Raleway', 'Merriweather',
+  'Playfair Display', 'Ubuntu', 'Nunito Sans', 'Quicksand', 'Work Sans',
+  'Manrope', 'Lexend', 'Geist', 'Outfit', 'Sora',
 ];
 
 const base = (tokens: ThemeTokens, id: ThemeId, name: string, radius: RadiusScale, extra: Partial<ThemeConfig> = {}): ThemeConfig => ({
@@ -50,18 +53,16 @@ export const PRESETS: Record<Exclude<ThemeId, 'custom'>, ThemeConfig> = {
     sidebarActive: '#95B359', sidebarHover: 'rgba(149,179,89,0.12)',
   }, 'light', 'Claro', 'soft'),
 
-  /* Dark: fondo más rico, card con más separación, contraste mejorado */
   dark: base({
     gray: '#8A99AA', dark: '#A3C468', mid: '#2D7A4F', light: '#94A3B8',
     green: '#A3C468', bg: '#111820', card: '#111820', border: '#243347',
-    text: '#615858', graySecondary: '#5E7080', white: '#E2E8EE',
+    text: '#615858', graySecondary: '#5E7080', white: '#F0F2FF',
     danger: '#F07070', dangerHover: '#D44040', greenText: '#A3C468',
     placeholder: '#2E3D50',
     sidebarBg: '#0C1520', sidebarText: '#607080',
     sidebarActive: '#A3C468', sidebarHover: 'rgba(163,196,104,0.13)',
   }, 'dark', 'Oscuro', 'soft', { sidebarBlur: true, accentGlow: true }),
 
-  /* Midnight: índigo profundo, acento violeta eléctrico */
   midnight: base({
     gray: '#6B7280', dark: '#615858', mid: '#1C1E36', light: '#9CA3C8',
     green: '#7C6FFF', bg: '#05060F', card: '#05060F', border: '#1C1E36',
@@ -82,7 +83,6 @@ export const PRESETS: Record<Exclude<ThemeId, 'custom'>, ThemeConfig> = {
     sidebarActive: '#4CAF72', sidebarHover: 'rgba(76,175,114,0.15)',
   }, 'forest', 'Bosque', 'round'),
 
-  /* Slate: azul acero, acento cyan brillante mejorado */
   slate: base({
     gray: '#94A3B8', dark: '#22D3EE', mid: '#1C1E36', light: '#CBD5E1',
     green: '#22D3EE', bg: '#0F172A', card: '#0F172A', border: '#1E3050',
@@ -93,7 +93,6 @@ export const PRESETS: Record<Exclude<ThemeId, 'custom'>, ThemeConfig> = {
     sidebarActive: '#22D3EE', sidebarHover: 'rgba(34,211,238,0.12)',
   }, 'slate', 'Pizarra', 'soft', { sidebarBlur: true }),
 
-  /* Sunset: cálido, naranja-coral con fondo crema oscura */
   sunset: base({
     gray: '#9A7060', dark: '#3D1A0A', mid: '#CC4400', light: '#FFAA80',
     green: '#FF6B35', bg: '#FFF8F4', card: '#FFFFFF', border: '#FFE0D0',
@@ -104,11 +103,10 @@ export const PRESETS: Record<Exclude<ThemeId, 'custom'>, ThemeConfig> = {
     sidebarActive: '#FF6B35', sidebarHover: 'rgba(255,107,53,0.15)',
   }, 'sunset', 'Atardecer', 'round'),
 
-  /* Ocean: azul profundo marino, acento teal */
   ocean: base({
     gray: '#6A8899', dark: '#2D7A4F', mid: '#2D7A4F', light: '#70A8C0',
     green: '#00C9A7', bg: '#020F18', card: '#020F18', border: '#0E2840',
-    text: '#615858', graySecondary: '#3D6070',  white: '#E8F4F8',
+    text: '#615858', graySecondary: '#3D6070', white: '#E8F4F8',
     danger: '#FF6B6B', dangerHover: '#E53E3E', greenText: '#00C9A7',
     placeholder: '#0E2840',
     sidebarBg: '#010C14', sidebarText: '#2E5060',
@@ -118,12 +116,72 @@ export const PRESETS: Record<Exclude<ThemeId, 'custom'>, ThemeConfig> = {
   graphite: base({
     gray: '#8A8A8A', dark: '#E8A020', mid: '#111111', light: '#B0B0B0',
     green: '#E8A020', bg: '#1A1A1A', card: '#1A1A1A', border: '#333333',
-    text: '#615858', graySecondary: '#606060', white: '#F5F5F',
+    text: '#615858', graySecondary: '#606060', white: '#F5F5F5',
     danger: '#FF5555', dangerHover: '#DD2222', greenText: '#E8A020',
     placeholder: '#333333',
     sidebarBg: '#111111', sidebarText: '#505050',
     sidebarActive: '#E8A020', sidebarHover: 'rgba(232,160,32,0.12)',
   }, 'graphite', 'Grafito', 'sharp', { accentGlow: false }),
+
+  rose: base({
+    gray: '#9B7B85', dark: '#3D0F1F', mid: '#B03060', light: '#E8A0B8',
+    green: '#E0437A', bg: '#FFF5F8', card: '#FFFFFF', border: '#FCDDE8',
+    text: '#3D0F1F', graySecondary: '#B08090', white: '#FFFFFF',
+    danger: '#DC2626', dangerHover: '#B91C1C', greenText: '#B03060',
+    placeholder: '#F0C0D0',
+    sidebarBg: '#2A0818', sidebarText: '#90506A',
+    sidebarActive: '#E0437A', sidebarHover: 'rgba(224,67,122,0.14)',
+  }, 'rose', 'Rosa', 'round'),
+
+  amber: base({
+    gray: '#8A7050', dark: '#2C1A00', mid: '#B07A00', light: '#D4A840',
+    green: '#D97706', bg: '#FFFBF0', card: '#FFFFFF', border: '#F0E0B0',
+    text: '#2C1A00', graySecondary: '#9A8060', white: '#FFFFFF',
+    danger: '#DC2626', dangerHover: '#B91C1C', greenText: '#B07A00',
+    placeholder: '#E8D090',
+    sidebarBg: '#1C1000', sidebarText: '#806040',
+    sidebarActive: '#D97706', sidebarHover: 'rgba(217,119,6,0.14)',
+  }, 'amber', 'Ámbar', 'soft'),
+
+  arctic: base({
+    gray: '#7090A8', dark: '#0A1E30', mid: '#1A6090', light: '#90C0D8',
+    green: '#0EA5E9', bg: '#F0F8FF', card: '#FFFFFF', border: '#C8E0F0',
+    text: '#0A1E30', graySecondary: '#6080A0', white: '#FFFFFF',
+    danger: '#EF4444', dangerHover: '#DC2626', greenText: '#0369A1',
+    placeholder: '#B0D0E8',
+    sidebarBg: '#050F1A', sidebarText: '#407090',
+    sidebarActive: '#0EA5E9', sidebarHover: 'rgba(14,165,233,0.13)',
+  }, 'arctic', 'Ártico', 'sharp'),
+
+  sakura: base({
+    gray: '#8878A0', dark: '#1E0E30', mid: '#6B3FA0', light: '#C8A8E0',
+    green: '#A855F7', bg: '#FAF6FF', card: '#FFFFFF', border: '#EAD8FF',
+    text: '#1E0E30', graySecondary: '#9878C0', white: '#FFFFFF',
+    danger: '#E11D48', dangerHover: '#BE123C', greenText: '#7E22CE',
+    placeholder: '#DCC8F8',
+    sidebarBg: '#120820', sidebarText: '#604880',
+    sidebarActive: '#A855F7', sidebarHover: 'rgba(168,85,247,0.14)',
+  }, 'sakura', 'Sakura', 'round', { accentGlow: true }),
+
+  neon: base({
+    gray: '#406040', dark: '#00FF88', mid: '#003020', light: '#40A060',
+    green: '#00FF88', bg: '#020C06', card: '#020C06', border: '#053018',
+    text: '#40A060', graySecondary: '#205030', white: '#053018',
+    danger: '#FF3366', dangerHover: '#CC0044', greenText: '#00FF88',
+    placeholder: '#053018',
+    sidebarBg: '#010804', sidebarText: '#205030',
+    sidebarActive: '#00FF88', sidebarHover: 'rgba(0,255,136,0.10)',
+  }, 'neon', 'Neón', 'sharp', { accentGlow: true, sidebarBlur: true }),
+
+  copper: base({
+    gray: '#8A6850', dark: '#D4722A', mid: '#2A1A0A', light: '#C89060',
+    green: '#CD7F32', bg: '#120C08', card: '#1C1008', border: '#3A2010',
+    text: '#C89060', graySecondary: '#604830', white: '#F5EDE0',
+    danger: '#FF4444', dangerHover: '#CC2222', greenText: '#CD7F32',
+    placeholder: '#3A2010',
+    sidebarBg: '#0C0804', sidebarText: '#503820',
+    sidebarActive: '#CD7F32', sidebarHover: 'rgba(205,127,50,0.14)',
+  }, 'copper', 'Cobre', 'soft', { accentGlow: true }),
 };
 
 interface ThemeContextValue {
@@ -152,6 +210,8 @@ function hex2rgba(hex: string, alpha: number): string {
   const b = parseInt(h.slice(4, 6), 16);
   return `rgba(${r},${g},${b},${alpha})`;
 }
+
+const TYPOGRAPHY_STYLE_ID = '__crm_typography__';
 
 function applyTheme(t: ThemeConfig) {
   const r = document.documentElement;
@@ -191,6 +251,7 @@ function applyTheme(t: ThemeConfig) {
   r.style.setProperty('--radius-md', rm.md);
 
   const ty = t.typography;
+
   r.style.setProperty('--font-body',           `'${ty.fontFamily}', sans-serif`);
   r.style.setProperty('--font-size-base',      `${ty.fontSize}px`);
   r.style.setProperty('--line-height-base',    `${ty.lineHeight}`);
@@ -198,19 +259,46 @@ function applyTheme(t: ThemeConfig) {
   r.style.setProperty('--letter-spacing-base', `${ty.letterSpacing}em`);
   r.style.setProperty('--card-opacity',        `${t.cardOpacity}`);
 
-  // Aplicar tipografía al body directamente para que afecte todo
-  document.body.style.fontFamily    = `'${ty.fontFamily}', sans-serif`;
-  document.body.style.fontSize      = `${ty.fontSize}px`;
-  document.body.style.lineHeight    = `${ty.lineHeight}`;
-  document.body.style.fontWeight    = `${ty.fontWeight}`;
-  document.body.style.letterSpacing = `${ty.letterSpacing}em`;
+  let styleTag = document.getElementById(TYPOGRAPHY_STYLE_ID) as HTMLStyleElement | null;
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = TYPOGRAPHY_STYLE_ID;
+    document.head.appendChild(styleTag);
+  }
+  styleTag.textContent = `
+    html {
+      font-size: ${ty.fontSize}px !important;
+      line-height: ${ty.lineHeight} !important;
+      font-weight: ${ty.fontWeight} !important;
+      font-family: '${ty.fontFamily}', sans-serif !important;
+      letter-spacing: ${ty.letterSpacing}em !important;
+    }
+    body {
+      font-size: 1rem !important;
+    }
+    *, *::before, *::after {
+      font-family: '${ty.fontFamily}', sans-serif !important;
+      font-size: inherit !important;
+      line-height: inherit !important;
+      font-weight: inherit !important;
+      letter-spacing: inherit !important;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: '${ty.fontFamily}', sans-serif !important;
+      line-height: calc(${ty.lineHeight} * 0.9);
+    }
+    input, select, textarea, button, option {
+      font-family: '${ty.fontFamily}', sans-serif !important;
+      font-size: inherit !important;
+      font-weight: inherit !important;
+      letter-spacing: inherit !important;
+    }
+  `;
 
-  // Densidad
   const dm = DENSITY_MAP[t.density];
   r.style.setProperty('--density-spacing', dm.spacing);
   r.style.setProperty('--density-item-py', dm.itemPy);
 
-  // Sidebar width
   r.style.setProperty('--sidebar-width', `${t.sidebarWidth}px`);
 
   r.setAttribute('data-theme',  t.id);

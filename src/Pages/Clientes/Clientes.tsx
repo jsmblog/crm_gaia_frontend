@@ -355,7 +355,7 @@ export const Clientes = () => {
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(c)}>
-                          <Pencil size={13} /> Editar
+                          <Pencil size={13} />
                         </button>
                         {c.estado === 'Inactivo' ? (
                           <button className="action-btn action-btn--restore"

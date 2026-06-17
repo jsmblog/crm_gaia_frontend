@@ -24,6 +24,7 @@ import { RouterBridgeConnector }   from './Components/RouterBridgeConnector';
 import { GestionSoporte } from './Pages/GestionSoporte/GestionSoporte';
 import { GestionLicencias } from './Pages/GestionLicencias/GestionLicencias';
 import { Perfil } from './Pages/Perfil/Perfil';
+import { AdminUsers } from './Pages/AI/Admin';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
               <Route path="/roles"                 element={<Roles />} />
               <Route path="/gestionar/estados"     element={<Estados />} />
               <Route path="/calendario"            element={<Calendario />} />
+              <Route path="/admin/users/ai"          element={<AdminUsers />} />
               <Route path="/gestion/soporte"     element={<GestionSoporte />} />
               <Route path="/gestionar/licencias"     element={<GestionLicencias />} />
               <Route path="/perfil"                element={<Perfil />} />

@@ -137,7 +137,7 @@ export const Consultores = () => {
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(c)}>
-                          <Pencil size={13} /> Editar
+                          <Pencil size={13} />
                         </button>
                         {c.activo && (
                           <button className="action-btn action-btn--del" onClick={() => setToDelete(c)}>

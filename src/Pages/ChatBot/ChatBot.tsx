@@ -54,11 +54,20 @@ export const ChatBot = () => {
     const bottomRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const typingRef = useRef<boolean>(false);
-    const tokensBadge = user?.tokens !== undefined ? (
-        <span className={`chatbot-tokens-badge ${user.tokens <= 10 ? 'chatbot-tokens-badge--danger' : user.tokens <= 30 ? 'chatbot-tokens-badge--warn' : ''}`}>
-            ⚡ {user.tokens}
-        </span>
-    ) : null;
+ 
+const tokensBadge = user?.rol === "admin" ? (
+  <span className="chatbot-tokens-badge chatbot-tokens-badge--admin" title="Tokens ilimitados">
+    ∞
+  </span>
+) : user?.tokens !== undefined ? (
+  <span
+    className={`chatbot-tokens-badge ${user.tokens <= 10 ? 'chatbot-tokens-badge--danger' : user.tokens <= 30 ? 'chatbot-tokens-badge--warn' : ''}`}
+    title={user.renovacion_tokens ? `Próxima renovación: ${new Date(new Date(user.renovacion_tokens).getTime() + 30*24*60*60*1000).toLocaleDateString()}` : ''}
+  >
+    ⚡ {user.tokens}
+  </span>
+) : null;
+
     const { transcript, listening, startListening, stopListening, resetTranscript, browserSupport } = useSpeechRecognition();
 
     useEffect(() => {

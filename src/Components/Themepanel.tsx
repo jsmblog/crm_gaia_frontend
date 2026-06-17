@@ -9,7 +9,6 @@ import {
 import '../Styles/ThemePanel.css';
 import type { BgFit, RadiusScale, ThemeId, ThemeTokens } from '../Interfaces/i_theme';
 
-
 const COLOR_TOKENS: { key: keyof ThemeTokens; label: string; group: string }[] = [
   { key: 'bg',            label: 'Fondo principal',   group: 'Base'    },
   { key: 'card',          label: 'Tarjetas',           group: 'Base'    },
@@ -35,6 +34,12 @@ const PRESET_LIST: { id: Exclude<ThemeId, 'custom'>; dot: string }[] = [
   { id: 'sunset',   dot: '#FF6B35' },
   { id: 'ocean',    dot: '#00C9A7' },
   { id: 'graphite', dot: '#E8A020' },
+  { id: 'rose',     dot: '#E0437A' },
+  { id: 'amber',    dot: '#D97706' },
+  { id: 'arctic',   dot: '#0EA5E9' },
+  { id: 'sakura',   dot: '#A855F7' },
+  { id: 'neon',     dot: '#00FF88' },
+  { id: 'copper',   dot: '#CD7F32' },
 ];
 
 const RADIUS_OPTIONS: { value: RadiusScale; label: string; preview: string }[] = [
@@ -91,7 +96,7 @@ const Toggle = ({ label, checked, onChange }: {
 export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
   const {
     theme, setPreset, setToken, setRadius, setTypography,
-    setSidebarBlur, setAccentGlow, setBgImage, setCardOpacity,resetAll,
+    setSidebarBlur, setAccentGlow, setBgImage, setCardOpacity, resetAll,
   } = useTheme();
 
   const [open, setOpen]             = useState(false);
@@ -146,7 +151,6 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
       </button>
 
       <div className={panelClass}>
-        {/* ── header ── */}
         <div className="tp__head">
           <span className="tp__head-title">Personalización</span>
           <div className="tp__head-actions">
@@ -182,7 +186,6 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
           </div>
         )}
 
-        {/* ── nav tabs ── */}
         <div className="tp__tabs">
           {SECTIONS.map(s => (
             <button
@@ -195,10 +198,8 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
           ))}
         </div>
 
-        {/* ── content ── */}
         <div className="tp__content">
 
-          {/* TEMAS */}
           {section === 'Temas' && (
             <div className="tp__theme-grid">
               {PRESET_LIST.map(({ id, dot }) => (
@@ -222,7 +223,6 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
             </div>
           )}
 
-          {/* TIPOGRAFÍA */}
           {section === 'Tipografía' && (
             <div className="tp__typo">
               <div className="tp__field">
@@ -254,7 +254,6 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
             </div>
           )}
 
-          {/* COLORES */}
           {section === 'Colores' && (
             <div className="tp__colors">
               {Object.entries(groups).map(([group, tokens]) => (
@@ -268,30 +267,65 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
                   </button>
                   {colorGroup === group && (
                     <div className="tp__cgroup-body">
-                      {tokens.map(({ key, label }) => (
-                        <div key={key} className="tp__crow">
-                          <span className="tp__crow-label">{label}</span>
-                          <div className="tp__crow-right">
-                            <input
-                              type="color"
-                              value={theme.tokens[key].startsWith('#') ? theme.tokens[key] : '#000000'}
-                              onChange={e => setToken(key, e.target.value)}
-                              className="tp__color-swatch"
-                            />
-                            <span className="tp__crow-hex">{theme.tokens[key]}</span>
-                            <button
-                              className="tp__crow-reset"
-                              title="Restaurar"
-                              onClick={() => {
-                                const base = theme.id !== 'custom' ? theme.id : 'light';
-                                setToken(key, PRESETS[base as Exclude<ThemeId, 'custom'>].tokens[key]);
-                              }}
-                            >
-                              <RotateCcw size={10} />
-                            </button>
+                      {tokens.map(({ key, label }) => {
+                        if (key === 'bg' || key === 'sidebarBg') {
+                          return (
+                            <div key={key} className="tp__crow--bg">
+                              <span className="tp__crow-label">{label}</span>
+                              <div className="tp__crow-right">
+                                <input
+                                  type="text"
+                                  value={theme.tokens[key]}
+                                  onChange={e => setToken(key, e.target.value)}
+                                  className="tp__text-input"
+                                  placeholder="color, gradiente, url..."
+                                />
+                                <input
+                                  type="color"
+                                  value={theme.tokens[key].startsWith('#') ? theme.tokens[key] : '#000000'}
+                                  onChange={e => setToken(key, e.target.value)}
+                                  className="tp__color-swatch"
+                                  title="Elegir color sólido"
+                                />
+                                <button
+                                  className="tp__crow-reset"
+                                  title="Restaurar"
+                                  onClick={() => {
+                                    const base = theme.id !== 'custom' ? theme.id : 'light';
+                                    setToken(key, PRESETS[base as Exclude<ThemeId, 'custom'>].tokens[key]);
+                                  }}
+                                >
+                                  <RotateCcw size={10} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={key} className="tp__crow">
+                            <span className="tp__crow-label">{label}</span>
+                            <div className="tp__crow-right">
+                              <input
+                                type="color"
+                                value={theme.tokens[key].startsWith('#') ? theme.tokens[key] : '#000000'}
+                                onChange={e => setToken(key, e.target.value)}
+                                className="tp__color-swatch"
+                              />
+                              <span className="tp__crow-hex">{theme.tokens[key]}</span>
+                              <button
+                                className="tp__crow-reset"
+                                title="Restaurar"
+                                onClick={() => {
+                                  const base = theme.id !== 'custom' ? theme.id : 'light';
+                                  setToken(key, PRESETS[base as Exclude<ThemeId, 'custom'>].tokens[key]);
+                                }}
+                              >
+                                <RotateCcw size={10} />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -299,11 +333,9 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
             </div>
           )}
 
-          {/* FONDO */}
           {section === 'Fondo' && (
             <div className="tp__bg">
               <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleUpload} />
-
               {!theme.bgImage ? (
                 <button className="tp__upload-btn" onClick={() => fileRef.current?.click()}>
                   <Upload size={16} />
@@ -321,7 +353,7 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
                       <Image size={13} />
                     </button>
                   </div>
-                  <Slider label="Opacidad" value={theme.bgImage.opacity} min={0} max={1} step={0.01}
+                  <Slider label="Opacidad de imagen" value={theme.bgImage.opacity} min={0} max={1} step={0.01}
                     onChange={v => setBgImage({ ...theme.bgImage!, opacity: v })} />
                   <Slider label="Desenfoque" value={theme.bgImage.blur} min={0} max={20} step={1} unit="px"
                     onChange={v => setBgImage({ ...theme.bgImage!, blur: v })} />
@@ -347,7 +379,6 @@ export const ThemePanel = ({ collapsed }: { collapsed: boolean }) => {
             </div>
           )}
 
-          {/* EFECTOS */}
           {section === 'Efectos' && (
             <div className="tp__effects">
               <div className="tp__field">

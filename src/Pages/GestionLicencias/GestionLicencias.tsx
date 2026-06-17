@@ -1,8 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import {
-  Plus, Pencil, X, Search, Trash2,
-  RotateCcw, Shield, Cpu,
-} from 'lucide-react';
+import { Plus, Pencil, Search, Trash2, RotateCcw } from 'lucide-react';
 import { licenciaService } from '../../Services/licenciaService';
 import { useToast } from '../../Hooks/useToast';
 import './GestionLicencias.css';
@@ -11,8 +8,7 @@ import { LicenciaModal } from './LicenciaModal';
 import { ConfirmModal } from '../../Components/ConfirmModal';
 
 const EstadoBadge = ({ estado }: { estado: EstadoLicencia }) => (
-  <span className={`gl-badge ${estado === 'Activada' ? 'gl-badge--active' : 'gl-badge--inactive'}`}>
-    <span className="gl-badge__dot" />
+  <span className={`badge ${estado === 'Activada' ? 'badge--activada' : 'badge--desactivada'}`}>
     {estado}
   </span>
 );
@@ -52,12 +48,6 @@ export const GestionLicencias = () => {
     return matchSearch && matchEstado;
   }), [licencias, search, filtroEstado]);
 
-  const stats = useMemo(() => ({
-    total: licencias.length,
-    activas: licencias.filter(l => l.estado === 'Activada').length,
-    desactivadas: licencias.filter(l => l.estado === 'Desactivada').length,
-  }), [licencias]);
-
   const handleDesactivar = async () => {
     if (!toDelete) return;
     try {
@@ -96,183 +86,103 @@ export const GestionLicencias = () => {
   };
 
   return (
-    <div className="gl-page">
+    <div className="soporte-page">
       <ToastContainer />
 
-      {/* Page Header */}
-      <div className="gl-page__header">
-        <div className="gl-page__title-group">
-          <h1 className="gl-page__title">Gestión de Licencias</h1>
-          <p className="gl-page__subtitle">Administración de licencias RPA y software por cliente</p>
+      <section className="soporte-section">
+        <div className="soporte-section__head">
+          <h2 className="soporte-section__title">Gestión de Licencias</h2>
+          <button className="btn-new" onClick={() => setModal('create')}>
+            <Plus size={15} /> Nueva Licencia
+          </button>
         </div>
-        <button className="gl-btn gl-btn--primary gl-btn--lg" onClick={() => setModal('create')}>
-          <Plus size={15} />
-          Nueva Licencia
-        </button>
-      </div>
 
-      {/* Stats Row */}
-      <div className="gl-stats">
-        <div className="gl-stat">
-          <span className="gl-stat__value">{stats.total}</span>
-          <span className="gl-stat__label">Total</span>
-        </div>
-        <div className="gl-stat gl-stat--active">
-          <span className="gl-stat__value">{stats.activas}</span>
-          <span className="gl-stat__label">Activas</span>
-        </div>
-        <div className="gl-stat gl-stat--inactive">
-          <span className="gl-stat__value">{stats.desactivadas}</span>
-          <span className="gl-stat__label">Desactivadas</span>
-        </div>
-      </div>
-
-      {/* Table Card */}
-      <div className="gl-card">
-        {/* Toolbar */}
-        <div className="gl-card__toolbar">
-          <div className="gl-search">
-            <Search size={13} className="gl-search__icon" />
-            <input
-              className="gl-search__input"
-              placeholder="Buscar por cliente, herramienta o IP…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            {search && (
-              <button className="gl-search__clear" onClick={() => setSearch('')}>
-                <X size={11} />
-              </button>
-            )}
+        <div className="table-card">
+          <div className="table-card__toolbar">
+            <span className="table-card__label">Licencias Registradas</span>
+            <div className="table-search">
+              <Search size={13} className="table-search__icon" />
+              <input
+                className="table-search__input"
+                placeholder="Buscar por cliente, herramienta o IP…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              className="table-filter"
+              value={filtroEstado}
+              onChange={e => setFiltroEstado(e.target.value as typeof filtroEstado)}
+            >
+              <option value="todos">Todos los estados</option>
+              <option value="Activada">Activada</option>
+              <option value="Desactivada">Desactivada</option>
+            </select>
+            <span className="table-card__count">{filtered.length} / {total}</span>
           </div>
 
-          <div className="gl-filter-tabs">
-            {(['todos', 'Activada', 'Desactivada'] as const).map(opt => (
-              <button
-                key={opt}
-                className={`gl-filter-tab ${filtroEstado === opt ? 'gl-filter-tab--active' : ''}`}
-                onClick={() => setFiltroEstado(opt)}
-              >
-                {opt === 'todos' ? 'Todos' : opt === 'Activada' ? '✓ Activas' : '✗ Inactivas'}
-              </button>
-            ))}
+          <div className="table-wrap">
+            <table className="ctable">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Herramienta</th>
+                  <th>Fecha Inicio</th>
+                  <th>Renovación</th>
+                  <th>Valor Anual</th>
+                  <th>Estado</th>
+                  <th>Procesos</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={8} className="ctable__empty">Cargando…</td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={8} className="ctable__empty">Sin resultados</td></tr>
+                ) : (
+                  filtered.map(lic => (
+                    <tr key={lic.id} className={lic.estado === 'Desactivada' ? 'ctable__row--inactive' : ''}>
+                      <td className="ctable__name">{lic.cliente?.empresa || lic.cliente_id}</td>
+                      <td>{lic.herramienta?.nombre || <span className="ctable__muted">—</span>}</td>
+                      <td>{formatDate(lic.fecha_inicio)}</td>
+                      <td>{lic.renovacion || <span className="ctable__muted">—</span>}</td>
+                      <td>{formatCurrency(lic.valor_anual)}</td>
+                      <td><EstadoBadge estado={lic.estado} /></td>
+                      <td>
+                        {lic.procesos?.length ? (
+                          <span className="ctable__procesos" title={lic.procesos.map(p => p.nombre_proceso).join(', ')}>
+                            {lic.procesos.length === 1
+                              ? lic.procesos[0].nombre_proceso
+                              : `${lic.procesos[0].nombre_proceso} +${lic.procesos.length - 1}`
+                            }
+                          </span>
+                        ) : <span className="ctable__muted">—</span>}
+                      </td>
+                      <td>
+                        <div className="ctable__actions">
+                          <button className="action-btn action-btn--edit" onClick={() => setModal(lic)}>
+                            <Pencil size={13} />
+                          </button>
+                          {lic.estado === 'Activada' ? (
+                            <button className="action-btn action-btn--del" onClick={() => setToDelete(lic)}>
+                              <Trash2 size={13} />
+                            </button>
+                          ) : (
+                            <button className="action-btn action-btn--restore" onClick={() => setToRestore(lic)}>
+                              <RotateCcw size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-
-          <span className="gl-card__count">
-            {filtered.length} <span>/ {total}</span>
-          </span>
         </div>
-
-        {/* Table */}
-        <div className="gl-table-wrap">
-          <table className="gl-table">
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Herramienta</th>
-                <th>Fecha Inicio</th>
-                <th>Renovación</th>
-                <th>Valor Anual</th>
-                <th>Estado</th>
-                <th>Procesos</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="gl-table__empty">
-                    <div className="gl-loading">
-                      <span className="gl-spinner gl-spinner--lg" />
-                      <span>Cargando licencias…</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="gl-table__empty">
-                    <Shield size={28} strokeWidth={1.2} />
-                    <span>No se encontraron licencias</span>
-                  </td>
-                </tr>
-              ) : filtered.map(lic => (
-                <tr
-                  key={lic.id}
-                  className={`gl-table__row ${lic.estado === 'Desactivada' ? 'gl-table__row--inactive' : ''}`}
-                >
-                  <td>
-                    <span className="gl-table__name">{lic.cliente?.empresa || lic.cliente_id}</span>
-                  </td>
-                  <td>
-                    {lic.herramienta?.nombre
-                      ? <span className="gl-table__tag"><Cpu size={11} />{lic.herramienta.nombre}</span>
-                      : <span className="gl-table__muted">—</span>
-                    }
-                  </td>
-                  <td>
-                    <span className="gl-table__date">
-                      {formatDate(lic.fecha_inicio)}
-                    </span>
-                  </td>
-                  <td>
-                    {lic.renovacion
-                      ? <span className="gl-table__pill">{lic.renovacion}</span>
-                      : <span className="gl-table__muted">—</span>
-                    }
-                  </td>
-                  <td>
-                    <span className="gl-table__currency">{formatCurrency(lic.valor_anual)}</span>
-                  </td>
-                  <td>
-                    <EstadoBadge estado={lic.estado} />
-                  </td>
-                  <td>
-                    {lic.procesos?.length ? (
-                      <span className="gl-table__procesos" title={lic.procesos.map(p => p.nombre_proceso).join(', ')}>
-                        {lic.procesos.length === 1
-                          ? lic.procesos[0].nombre_proceso
-                          : `${lic.procesos[0].nombre_proceso} +${lic.procesos.length - 1}`
-                        }
-                      </span>
-                    ) : (
-                      <span className="gl-table__muted">—</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="gl-table__actions">
-                      <button
-                        className="gl-action-btn gl-action-btn--edit"
-                        onClick={() => setModal(lic)}
-                        title="Editar"
-                      >
-                        <Pencil size={12} />
-                        <span>Editar</span>
-                      </button>
-                      {lic.estado === 'Activada' ? (
-                        <button
-                          className="gl-action-btn gl-action-btn--delete"
-                          onClick={() => setToDelete(lic)}
-                          title="Desactivar"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      ) : (
-                        <button
-                          className="gl-action-btn gl-action-btn--restore"
-                          onClick={() => setToRestore(lic)}
-                          title="Reactivar"
-                        >
-                          <RotateCcw size={12} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </section>
 
       {modal && (
         <LicenciaModal

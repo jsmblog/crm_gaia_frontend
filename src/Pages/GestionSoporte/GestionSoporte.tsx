@@ -140,7 +140,7 @@ export const GestionSoporte = () => {
                       <td>
                         <div className="ctable__actions">
                           <button className="action-btn action-btn--edit" onClick={() => setModal(s)}>
-                            <Pencil size={13} /> Editar
+                            <Pencil size={13} />
                           </button>
                           <button className="action-btn action-btn--del" onClick={() => setToDelete(s)}>
                             <Trash2 size={13} />

@@ -153,7 +153,7 @@ export const Areas = () => {
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(a)}>
-                          <Pencil size={13} /> Editar
+                          <Pencil size={13} />
                         </button>
                         {a.activo && (
                           <button className="action-btn action-btn--del" onClick={() => setToDelete(a)}>

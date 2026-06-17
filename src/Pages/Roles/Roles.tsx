@@ -128,7 +128,7 @@ export const Roles = () => {
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(r)}>
-                          <Pencil size={13} /> Editar
+                          <Pencil size={13} />
                         </button>
                         {r.activo && (
                           <button className="action-btn action-btn--del" onClick={() => setToDelete(r)}>

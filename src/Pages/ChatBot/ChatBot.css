@@ -202,6 +202,13 @@
   transition: background var(--transition);
   font-family: var(--font-body);
 }
+.chatbot-tokens-badge--admin {
+  background: var(--blue-tint);
+  color: var(--blue-text);
+  border-color: var(--blue-border);
+  font-weight: 700;
+  font-size: 13px;
+}
 .chatbot-new-btn:hover { opacity: .7; }
 .chatbot-new-btn--lg {
   padding: 10px 20px;

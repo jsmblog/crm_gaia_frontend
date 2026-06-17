@@ -1,4 +1,4 @@
-export type ThemeId    = 'light' | 'dark' | 'midnight' | 'forest' | 'slate' | 'sunset' | 'ocean' | 'graphite' | 'custom';
+export type ThemeId    = 'light' | 'dark' | 'midnight' | 'forest' | 'slate' | 'sunset' | 'ocean' | 'graphite' | 'custom' | 'rose' | 'amber' | 'arctic' | 'sakura' | 'neon' | 'copper';
 export type RadiusScale = 'sharp' | 'soft' | 'round';
 export type BgFit      = 'cover' | 'contain' | 'repeat' | 'center';
 export type Density    = 'compact' | 'normal' | 'spacious';

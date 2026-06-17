@@ -39,6 +39,7 @@ export const NAV: NavGroup[] = [
   {
     group: 'Datos Maestros',
     items: [
+      {to: '/admin/users/ai',         icon: Users,       label: 'AI',           key: '__admin__'         },
       { to: '/areas',              icon: LayoutGrid,  label: 'Areas',              key: 'areas'             },
       { to: '/calendario',         icon: CalendarDays,label: 'Calendario',         key: 'calendario'        },
       { to: '/consultores',        icon: UserCheck,   label: 'Consultores',        key: '__admin__'         },

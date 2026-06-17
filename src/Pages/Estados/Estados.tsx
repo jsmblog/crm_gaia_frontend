@@ -75,7 +75,7 @@ export const Estados = () => {
                     <td>
                       <div className="ctable__actions">
                         <button className="action-btn action-btn--edit" onClick={() => setModal(e)}>
-                          <Pencil size={13} /> Editar
+                          <Pencil size={13} />
                         </button>
                         {e.activo ? (
                           <button className="action-btn action-btn--del" onClick={() => setToDelete(e)}>

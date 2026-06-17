@@ -1,15 +1,9 @@
-/* ─────────────────────────────────────────────────────────
-   ThemePanel — estilos completos v2
-   ───────────────────────────────────────────────────────── */
-
-/* wrapper en sidebar */
 .tp {
   position: relative;
   padding: 0 8px;
   margin-bottom: 4px;
 }
 
-/* botón trigger */
 .tp__trigger {
   display: flex;
   align-items: center;
@@ -31,7 +25,6 @@
 }
 .tp__trigger > span:first-of-type { flex: 1; text-align: left; }
 
-/* ── panel ── */
 .tp__panel {
   display: none;
   position: fixed;
@@ -65,7 +58,6 @@
   max-height: 88vh;
 }
 
-/* ── header ── */
 .tp__head {
   display: flex;
   align-items: center;
@@ -101,7 +93,6 @@
 .tp__icon-btn:hover { color: var(--text); background: var(--dark-tint); }
 .tp__icon-btn--danger:hover { color: var(--danger); border-color: var(--danger-border); }
 
-/* ── confirm reset ── */
 .tp__confirm {
   margin: 0 12px;
   padding: 10px 12px;
@@ -137,7 +128,6 @@
 }
 .tp__confirm-ok:hover { background: var(--danger-hover) !important; }
 
-/* ── tabs ── */
 .tp__tabs {
   display: flex;
   padding: 8px 12px 0;
@@ -165,7 +155,6 @@
   font-weight: 500;
 }
 
-/* ── scrollable content ── */
 .tp__content {
   flex: 1;
   overflow-y: auto;
@@ -176,7 +165,6 @@
 .tp__content::-webkit-scrollbar       { width: 4px; }
 .tp__content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* ── footer ── */
 .tp__foot {
   padding: 8px 14px;
   border-top: 1px solid var(--border);
@@ -188,9 +176,6 @@
   letter-spacing: .02em;
 }
 
-/* ══════════════════════════════════════
-   TEMAS
-═══════════════════════════════════════ */
 .tp__theme-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -226,9 +211,6 @@
 .tp__theme-name { flex: 1; }
 .tp__theme-check { color: var(--green); }
 
-/* ══════════════════════════════════════
-   TIPOGRAFÍA
-═══════════════════════════════════════ */
 .tp__typo { display: flex; flex-direction: column; gap: 14px; }
 .tp__typo-preview {
   padding: 10px 12px;
@@ -262,7 +244,6 @@
 }
 .tp__select:focus { border-color: var(--green); }
 
-/* slider */
 .tp__slider-row { display: flex; flex-direction: column; gap: 4px; }
 .tp__slider-header { display: flex; justify-content: space-between; align-items: baseline; }
 .tp__slider-label { font-size: 11.5px; color: var(--text); }
@@ -319,9 +300,6 @@
 }
 .tp__reset-btn:hover { color: var(--danger); border-color: var(--danger-border); }
 
-/* ══════════════════════════════════════
-   COLORES
-═══════════════════════════════════════ */
 .tp__colors { display: flex; flex-direction: column; gap: 6px; }
 .tp__cgroup {
   border: 1px solid var(--border);
@@ -395,13 +373,38 @@
 }
 .tp__crow-reset:hover { color: var(--danger); border-color: var(--danger-border); }
 
-/* ══════════════════════════════════════
-   FONDO
-═══════════════════════════════════════ */
-.tp__bg { display: flex; flex-direction: column; gap: 14px; 
-width: 100%;
+.tp__crow--bg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tp__crow--bg .tp__crow-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-secondary);
+}
+.tp__crow--bg .tp__crow-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tp__text-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  background: white;
+  font-family: inherit;
+}
+.tp__text-input:focus {
+  outline: none;
+  border-color: var(--green);
 }
 
+.tp__bg { display: flex; flex-direction: column; gap: 14px; }
 .tp__upload-btn {
   display: flex;
   flex-direction: column;
@@ -460,12 +463,7 @@ width: 100%;
 }
 .tp__bg-change:hover { background: rgba(0,0,0,.8); }
 
-/* ══════════════════════════════════════
-   EFECTOS
-═══════════════════════════════════════ */
 .tp__effects { display: flex; flex-direction: column; gap: 18px; }
-
-/* radius cards */
 .tp__radius-grid { display: flex; gap: 8px; }
 .tp__radius-card {
   flex: 1;
@@ -497,7 +495,6 @@ width: 100%;
   display: block;
 }
 
-/* toggles */
 .tp__toggles { display: flex; flex-direction: column; gap: 10px; }
 .tp__toggle {
   display: flex;
@@ -530,7 +527,6 @@ width: 100%;
 .tp__toggle input:checked ~ .tp__toggle-track::after { transform: translateX(15px); }
 [data-glow='true'] .tp__toggle input:checked ~ .tp__toggle-track { box-shadow: 0 0 6px var(--green); }
 
-/* ── shared segmented ── */
 .tp__segmented {
   display: flex;
   border: 1px solid var(--border);
