@@ -10,7 +10,6 @@
   padding: 24px;
 }
 
-/* ── Background ───────────────────── */
 .verificar__bg-grid {
   position: absolute;
   inset: 0;
@@ -23,16 +22,17 @@
 
 .verificar__glow {
   position: absolute;
-  width: 500px; height: 500px;
+  width: 500px;
+  height: 500px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(149,179,89,.10) 0%, transparent 70%);
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   translate: -50% -50%;
   pointer-events: none;
   filter: blur(40px);
 }
 
-/* ── Card ─────────────────────────── */
 .verificar__card {
   position: relative;
   z-index: 1;
@@ -51,14 +51,9 @@
   animation: cardIn 400ms cubic-bezier(.22,1,.36,1);
 }
 
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(20px) scale(.97); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* ── Icon ─────────────────────────── */
 .verificar__icon {
-  width: 72px; height: 72px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -66,32 +61,12 @@
   margin-bottom: 4px;
 }
 
-.verificar__icon--loading {
-  background: rgba(119,156,171,.12);
-  color: var(--light);
-  border: 1px solid rgba(119,156,171,.2);
-}
+.verificar__icon--loading { background: var(--light-tint); color: var(--light); border: 1px solid rgba(119,156,171,.2); }
+.verificar__icon--success { background: rgba(149,179,89,.12); color: var(--green); border: 1px solid rgba(149,179,89,.25); }
+.verificar__icon--error   { background: rgba(224,92,92,.10); color: var(--danger); border: 1px solid rgba(224,92,92,.2); }
 
-.verificar__icon--success {
-  background: rgba(149,179,89,.12);
-  color: var(--green);
-  border: 1px solid rgba(149,179,89,.25);
-}
+.verificar__spinner { animation: spin .8s linear infinite; }
 
-.verificar__icon--error {
-  background: rgba(224,92,92,.10);
-  color: #E05C5C;
-  border: 1px solid rgba(224,92,92,.2);
-}
-
-/* ── Spinner ──────────────────────── */
-.verificar__spinner {
-  animation: spin .8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Text ─────────────────────────── */
 .verificar__eyebrow {
   font-size: 11px;
   font-weight: 600;
@@ -105,21 +80,20 @@
   font-family: 'Syne', sans-serif;
   font-size: 26px;
   font-weight: 700;
-  color: #fff;
+  color: var(--white);
   letter-spacing: -.03em;
   line-height: 1.15;
 }
 
 .verificar__desc {
   font-size: 14px;
-  color: rgba(255,255,255,.45);
+  color: var(--gray-secondary);
   line-height: 1.65;
   font-weight: 300;
   max-width: 300px;
   margin-top: 2px;
 }
 
-/* ── Buttons ──────────────────────── */
 .verificar__btn {
   display: inline-flex;
   align-items: center;
@@ -137,30 +111,26 @@
   width: 100%;
 }
 
-.verificar__btn--primary {
-  background: var(--green);
-  color: #fff;
-}
+.verificar__btn--primary { background: var(--green); color: var(--white); }
 
 .verificar__btn--primary:hover {
-  background: #7d9946;
+  background: var(--green);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(149,179,89,.28);
+  box-shadow: 0 6px 20px var(--green-tint);
 }
 
 .verificar__btn--ghost {
   background: rgba(255,255,255,.07);
-  color: rgba(255,255,255,.65);
+  color: var(--white);
   border: 1px solid rgba(255,255,255,.1);
 }
 
 .verificar__btn--ghost:hover {
   background: rgba(255,255,255,.12);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-1px);
 }
 
-/* ── Responsive ───────────────────── */
 @media (max-width: 480px) {
   .verificar__card { padding: 36px 24px; }
   .verificar__title { font-size: 22px; }

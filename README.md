@@ -132,54 +132,6 @@ Para previsualizar el build localmente:
 npm run preview
 ```
 
----
-
-## Despliegue con Docker
-
-El frontend se sirve con **Nginx**. El `Dockerfile` realiza un build en dos etapas:
-
-```dockerfile
-# Etapa 1 — Build
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# Etapa 2 — Servidor Nginx
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-```
-
-**`nginx.conf`** — necesario para que el routing de React (SPA) funcione correctamente:
-
-```nginx
-server {
-  listen 80;
-  root /usr/share/nginx/html;
-  index index.html;
-
-  # Redirige cualquier ruta al index.html 
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
-
-  # Proxy al backend (evita problemas de CORS en producción)
-  location /api {
-    proxy_pass http://backend:4000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-  }
-}
-```
-
-Para levantar todo el sistema (frontend + backend + Redis) con un solo comando, referirse al `docker-compose.yml` en la raíz del repositorio principal.
-
----
-
 ## Módulos del sistema
 
 ### Pipeline / Procesos
@@ -208,7 +160,7 @@ CRUD completo con soporte para múltiples contactos por cliente (`SeguimientoCon
 Gestión de perfiles, estado activo/inactivo y asignación de vistas/módulos permitidos (control de acceso granular).
 
 ### Herramientas RPA
-Catálogo de herramientas automatizables (UiPath, Power Automate, etc.) asociadas a procesos.
+Catálogo de herramientas.
 
 ### Tickets de Soporte
 Registro y seguimiento de incidencias por cliente y proyecto.
@@ -245,24 +197,15 @@ Vista de tres columnas con carga lazy por nivel:
 - **PanelProyectos** — carga al seleccionar un cliente
 - **PanelProcesos** — carga al seleccionar un proyecto
 
-El `refreshSignal` (número que incrementa tras cada mutación) fuerza la recarga de los paneles afectados.
-
-### EstadoSelect
-Select reutilizable que consume `WizardContext` para obtener los estados disponibles. Acepta `defaultValue` (nombre del estado) para preseleccionar el estado correspondiente a cada etapa sin tener que resolver el ID manualmente.
-
----
-
 ## Contextos globales
 
 ### AuthContext
-Gestiona la sesión del usuario: token JWT, datos del consultor autenticado (nombre, roles, vistas permitidas, tokens de IA disponibles). Se sincroniza con las respuestas del backend que incluyen `cookieVersion` para forzar re-login ante cambios de esquema.
+Gestiona la sesión del usuario: token JWT, datos del consultor autenticado (nombre, roles, vistas permitidas, tokens).
 
 Expone:
-- `user` — datos del consultor
+- `user` — datos del usuario autenticado
 - `login(token)` — inicia sesión
 - `logout()` — cierra sesión
-- `updateTokensIA(usados, limite)` — sincroniza el estado de tokens IA tras cada llamada al chatbot
-
 ---
 
 ## Sistema de caché y comunicación con el backend
@@ -271,9 +214,9 @@ El backend implementa caché con Redis. Las claves relevantes para el frontend s
 
 | Endpoint | Clave Redis | TTL |
 |---|---|---|
-| `GET /pipeline/clientes` | `clientes:resumen` | 5 min |
-| `GET /pipeline/clientes/:id/proyectos` | `cliente:{id}:proyectos` | 5 min |
-| `GET /pipeline/proyectos/:id/procesos` | `proyecto:{id}:procesos` | 3 min |
+| `GET /pipeline/clientes` | `clientes:resumen`|
+| `GET /pipeline/clientes/:id/proyectos` | `cliente:{id}:proyectos` | 
+| `GET /pipeline/proyectos/:id/procesos` | `proyecto:{id}:procesos` | 
 
 Cualquier mutación (crear, editar o eliminar proceso/proyecto) invalida automáticamente las claves afectadas en el backend. El frontend no necesita gestionar caché propio; basta con que el `refreshSignal` cambie para que los paneles refresquen y obtengan datos actualizados.
 

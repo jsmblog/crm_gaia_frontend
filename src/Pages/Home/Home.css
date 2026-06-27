@@ -6,7 +6,6 @@
   min-height: 100%;
 }
 
-/* ── Topbar ─────────────────────────── */
 .home__topbar {
   display: flex;
   align-items: center;
@@ -25,17 +24,9 @@
   letter-spacing: -.02em;
 }
 
-.home__sub {
-  font-size: 12px;
-  color: var(--gray-secondary);
-  margin-top: 2px;
-}
+.home__sub { font-size: 12px; color: var(--gray-secondary); margin-top: 2px; }
 
-.home__topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.home__topbar-right { display: flex; align-items: center; gap: 12px; }
 
 .home__search {
   display: flex;
@@ -52,7 +43,7 @@
 .home__search-input {
   border: none;
   outline: none;
-  font-family: var(--font);
+  font-family: var(--font-body);
   font-size: 13px;
   color: var(--text);
   background: transparent;
@@ -72,7 +63,6 @@
   letter-spacing: .04em;
 }
 
-/* ── KPI cards ──────────────────────── */
 .home__kpis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -109,11 +99,7 @@
   margin: 4px 0 2px;
 }
 
-.kpi-card__sub {
-  font-size: 12px;
-  color: var(--gray-secondary);
-  font-weight: 400;
-}
+.kpi-card__sub { font-size: 12px; color: var(--gray-secondary); font-weight: 400; }
 
 .kpi-card__badge {
   display: inline-flex;
@@ -127,10 +113,9 @@
   width: fit-content;
 }
 
-.kpi-card__badge--up   { background: rgba(149,179,89,.12);  color: #6a9033; }
-.kpi-card__badge--down { background: rgba(224,92,92,.1);    color: #c04040; }
+.kpi-card__badge--up   { background: rgba(149,179,89,.12); color: var(--green-text); }
+.kpi-card__badge--down { background: rgba(224,92,92,.1);   color: var(--danger-hover); }
 
-/* bottom accent bar */
 .kpi-card__bar {
   position: absolute;
   bottom: 0;
@@ -140,12 +125,7 @@
   background: var(--accent, var(--light));
 }
 
-/* ── Charts ─────────────────────────── */
-.home__charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
+.home__charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .chart-card {
   background: var(--card);
@@ -164,17 +144,8 @@
   gap: 12px;
 }
 
-.chart-card__title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--dark);
-}
-
-.chart-card__sub {
-  font-size: 11px;
-  color: var(--gray-secondary);
-  margin-top: 2px;
-}
+.chart-card__title { font-size: 14px; font-weight: 600; color: var(--dark); }
+.chart-card__sub   { font-size: 11px; color: var(--gray-secondary); margin-top: 2px; }
 
 .chart-card__badge {
   font-size: 10px;
@@ -188,12 +159,7 @@
   white-space: nowrap;
 }
 
-/* ── Horizontal bars ─────────────────── */
-.hbar-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.hbar-list { display: flex; flex-direction: column; gap: 12px; }
 
 .hbar-item {
   display: grid;
@@ -211,27 +177,12 @@
   text-overflow: ellipsis;
 }
 
-.hbar-item__track {
-  background: var(--bg);
-  border-radius: 99px;
-  height: 8px;
-  overflow: hidden;
-}
+.hbar-item__track { background: var(--bg); border-radius: 99px; height: 8px; overflow: hidden; }
 
-.hbar-item__fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width .6s ease;
-}
+.hbar-item__fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
 
-.hbar-item__val {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--dark);
-  text-align: right;
-}
+.hbar-item__val { font-size: 12px; font-weight: 600; color: var(--dark); text-align: right; }
 
-/* ── Responsive ─────────────────────── */
 @media (max-width: 1100px) {
   .home__kpis { grid-template-columns: repeat(2, 1fr); }
 }

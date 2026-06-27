@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
-
 .pnf {
   font-family: 'DM Sans', sans-serif;
   min-height: 100dvh;
@@ -22,7 +20,6 @@
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
 }
 
-/* ── Glows ────────────────────────── */
 .pnf__glow {
   position: absolute;
   border-radius: 50%;
@@ -46,7 +43,6 @@
   left: -80px;
 }
 
-/* ── Inner ────────────────────────── */
 .pnf__inner {
   position: relative;
   z-index: 1;
@@ -59,7 +55,6 @@
   width: 100%;
 }
 
-/* ── Big 404 number ───────────────── */
 .pnf__num {
   display: flex;
   align-items: center;
@@ -95,11 +90,6 @@
     0 0 0 20px rgba(119,156,171,.02);
 }
 
-@keyframes spinSlow {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Copy ─────────────────────────── */
 .pnf__copy {
   display: flex;
   flex-direction: column;
@@ -119,21 +109,20 @@
   font-family: 'Syne', sans-serif;
   font-size: clamp(26px, 5vw, 36px);
   font-weight: 700;
-  color: #fff;
+  color: var(--light, #779CAB);
   letter-spacing: -.03em;
   line-height: 1.15;
 }
 
 .pnf__desc {
   font-size: 15px;
-  color: rgba(255,255,255,.38);
+  color: var(--light, #779CAB);
   line-height: 1.7;
   font-weight: 300;
   max-width: 380px;
   margin: 0 auto;
 }
 
-/* ── Actions ──────────────────────── */
 .pnf__actions {
   display: flex;
   align-items: center;
@@ -158,13 +147,13 @@
 }
 
 .pnf__btn--primary {
-  background: #fff;
+  background: var(--white);
   color: var(--dark, #2F3D4D);
 }
 
 .pnf__btn--primary:hover {
   background: var(--green, #95B359);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(149,179,89,.28);
 }
@@ -181,18 +170,6 @@
   transform: translateY(-2px);
 }
 
-/* ── Animations ───────────────────── */
-@keyframes floatIn {
-  from { opacity: 0; transform: translateY(-24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Responsive ───────────────────── */
 @media (max-width: 480px) {
   .pnf__actions { flex-direction: column; width: 100%; }
   .pnf__btn     { width: 100%; justify-content: center; }

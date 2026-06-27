@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fff;
+  background: var(--white);
   padding: 14px 20px;
   border-radius: 10px;
   min-width: 280px;
@@ -28,7 +28,7 @@
 }
 
 .toast-item__message {
-  color: var(--text, #2F3D4D);
+  color: var(--text);
   font-size: 17px;
   font-weight: 500;
   line-height: 1.4;

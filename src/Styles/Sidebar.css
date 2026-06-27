@@ -35,9 +35,7 @@
 
 .sidebar__nav::-webkit-scrollbar { display: none; }
 
-.sidebar__group {
-  padding: 0 0 8px;
-}
+.sidebar__group { padding: 0 0 8px; }
 
 .sidebar__group-label {
   font-size: 9px;
@@ -127,7 +125,7 @@
   top: 50%;
   translate: 0 -50%;
   background: var(--sidebar-tooltip-bg, #1e2a38);
-  color: #fff;
+  color: var(--white);
   font-size: 12px;
   font-weight: 500;
   padding: 6px 10px;
@@ -150,9 +148,7 @@
   border-right-color: var(--sidebar-tooltip-bg, #1e2a38);
 }
 
-.sidebar--collapsed .sidebar__item:hover .sidebar__tooltip {
-  opacity: 1;
-}
+.sidebar--collapsed .sidebar__item:hover .sidebar__tooltip { opacity: 1; }
 
 .sidebar__item--logout {
   color: var(--sidebar-text);
@@ -191,15 +187,12 @@
 
 .sidebar__toggle:hover {
   background: var(--sidebar-active);
-  color: #fff;
+  color: var(--white);
   border-color: var(--sidebar-active);
 }
 
-.sidebar--collapsed .sidebar__toggle {
-  transform: rotate(180deg);
-}
+.sidebar--collapsed .sidebar__toggle { transform: rotate(180deg); }
 
-/* ── brand ── */
 .sidebar__brand--clickable {
   all: unset;
   display: flex;
@@ -214,22 +207,15 @@
   box-sizing: border-box;
 }
 
-.sidebar__brand--clickable:hover {
-  background: var(--sidebar-hover);
-}
+.sidebar__brand--clickable:hover { background: var(--sidebar-hover); }
 
 .sidebar__brand--clickable:hover .sidebar__brand-arrow {
   opacity: 1;
   transform: translateX(2px);
 }
 
-.sidebar__brand--clickable:hover .sidebar__brand-icon-overlay {
-  opacity: 1;
-}
-
-.sidebar__brand--clickable:hover .sidebar__brand-icon {
-  color: transparent;
-}
+.sidebar__brand--clickable:hover .sidebar__brand-icon-overlay { opacity: 1; }
+.sidebar__brand--clickable:hover .sidebar__brand-icon { color: transparent; }
 
 .sidebar__brand-icon {
   position: relative;
@@ -243,7 +229,7 @@
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 15px;
-  color: #fff;
+  color: var(--white);
   flex-shrink: 0;
   transition: color var(--transition);
 }
@@ -258,7 +244,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--white);
   opacity: 0;
   transition: opacity var(--transition);
 }
